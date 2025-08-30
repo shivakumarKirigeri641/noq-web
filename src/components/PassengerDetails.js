@@ -1,4 +1,6 @@
+import { source } from "framer-motion/client";
 import { useState, useRef, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 
 export default function PassengerDetails() {
@@ -8,6 +10,18 @@ export default function PassengerDetails() {
     { id: 3, number: "303", name: "Passenger", fare: 60, arrival: "01:45 PM" },
   ];
   const navigate = useNavigate();
+  const srcSelected = useSelector(
+    (store) => store?.selectedStationsAndDate?.selectedsource
+  );
+  const destSelected = useSelector(
+    (store) => store?.selectedStationsAndDate?.selecteddestination
+  );
+  console.log(srcSelected);
+  console.log(destSelected);
+  const journeyDate = useSelector(
+    (store) => store.selectedStationsAndDate.journeyDate
+  );
+  const parsedJourneyDate = journeyDate ? new Date(journeyDate) : null;
   const [selectedTrain, setSelectedTrain] = useState(null);
 
   const [bookingFor, setBookingFor] = useState("self");
@@ -119,6 +133,23 @@ export default function PassengerDetails() {
           <span className="text-sm">Back</span>
         </button>
 
+        {/* selected src dest */}
+        <div className="text-sm mt-8 italic">
+          <p>
+            You are going from{" "}
+            <span className="text-blue-600 font-semibold">
+              {srcSelected?.name}
+            </span>{" "}
+            to{" "}
+            <span className="text-blue-600 font-semibold">
+              {destSelected?.name}
+            </span>{" "}
+            on{" "}
+            <span className="text-blue-600 font-semibold">
+              {parsedJourneyDate?.toISOString()}
+            </span>
+          </p>
+        </div>
         {/* Header */}
         <header className="my-8 text-center">
           <h1 className="text-2xl font-bold text-slate-800">

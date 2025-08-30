@@ -4,6 +4,11 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { addStationsList } from "../store/slices/stationsListSlice";
+import {
+  addDestination,
+  addJourneyDate,
+  addSource,
+} from "../store/slices/selectedStationsAndDateSlice";
 
 export default function TrainDetails() {
   const today = new Date();
@@ -81,7 +86,8 @@ export default function TrainDetails() {
 
     const suggestions = stations.filter(
       (st) =>
-        st.name.toLowerCase().includes(inputValue.toLowerCase()) &&
+        (st.name.toLowerCase().includes(inputValue.toLowerCase()) ||
+          st.code.toLowerCase().includes(inputValue.toLowerCase())) &&
         (type === "source"
           ? st._id !== destination?._id
           : st._id !== source?._id)
@@ -95,18 +101,20 @@ export default function TrainDetails() {
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setHighlightIndex((prev) => (prev > 0 ? prev - 1 : prev));
-    } else if (e.key === "Enter") {
+    } else if (e.key === "Enter" || e.key === "Tab") {
       e.preventDefault();
       if (highlightIndex >= 0) {
         const selected = suggestions[highlightIndex];
         if (type === "source") {
           setSource(selected);
           setSourceInput(`${selected.name} (${selected.code})`);
+          dispatch(addSource(selected));
           setSourceActive(false);
           setHighlightIndex(-1);
           destinationInputRef.current.focus();
         } else {
           setDestination(selected);
+          dispatch(addDestination(selected));
           setDestinationInput(`${selected.name} (${selected.code})`);
           setDestinationActive(false);
           setHighlightIndex(-1);
@@ -135,7 +143,7 @@ export default function TrainDetails() {
         </button>
 
         <h2 className="text-2xl font-bold my-8 text-center text-gray-800">
-          🚆 Train details
+          🚆 Journey details
         </h2>
 
         {/* Source */}
@@ -165,7 +173,12 @@ export default function TrainDetails() {
               {stations
                 .filter(
                   (st) =>
-                    st.name.toLowerCase().includes(sourceInput.toLowerCase()) &&
+                    (st.name
+                      .toLowerCase()
+                      .includes(sourceInput.toLowerCase()) ||
+                      st.code
+                        .toLowerCase()
+                        .includes(sourceInput.toLowerCase())) &&
                     st._id !== destination?._id
                 )
                 .map((st, i) => (
@@ -173,6 +186,7 @@ export default function TrainDetails() {
                     key={st._id}
                     onClick={() => {
                       setSource(st);
+                      dispatch(addSource(st));
                       setSourceInput(`${st.name} (${st.code})`);
                       setSourceActive(false);
                       destinationInputRef.current.focus();
@@ -218,9 +232,12 @@ export default function TrainDetails() {
               {stations
                 .filter(
                   (st) =>
-                    st.name
+                    (st.name
                       .toLowerCase()
-                      .includes(destinationInput.toLowerCase()) &&
+                      .includes(destinationInput.toLowerCase()) ||
+                      st.code
+                        .toLowerCase()
+                        .includes(destinationInput.toLowerCase())) &&
                     st._id !== source?._id
                 )
                 .map((st, i) => (
@@ -228,6 +245,7 @@ export default function TrainDetails() {
                     key={st._id}
                     onClick={() => {
                       setDestination(st);
+                      dispatch(addDestination(st));
                       setDestinationInput(`${st.name} (${st.code})`);
                       setDestinationActive(false);
                       dateInputRef.current.focus();
@@ -256,7 +274,10 @@ export default function TrainDetails() {
             value={date}
             min={todayStr}
             max={tomorrowStr}
-            onChange={(e) => setDate(e.target.value)}
+            onChange={(e) => {
+              setDate(e.target.value);
+              dispatch(addJourneyDate(date));
+            }}
             className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition text-gray-800"
           />
         </div>
