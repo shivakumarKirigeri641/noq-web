@@ -4,11 +4,23 @@ import { SERVER } from "../utils/constants";
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
-import { getgid } from "process";
+import { getegid, getgid } from "process";
 
 const Home = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  useEffect(() => {
+    try {
+      const fetchgid = () => {
+        const login = crypto.randomUUID();
+        dispatch(addlogin(login));
+        console.log(login);
+      };
+      fetchgid();
+    } catch (err) {
+      console.log(err.message);
+    }
+  }, []);
   return (
     <div>
       <p>Welcome to NoQ</p>

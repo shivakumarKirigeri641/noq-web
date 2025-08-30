@@ -3,17 +3,23 @@ import { motion } from "framer-motion";
 import { SERVER } from "../utils/constants";
 import { useNavigate } from "react-router";
 import axios from "axios";
+import { useSelector } from "react-redux";
 
 const LoginOptions = () => {
   const navigate = useNavigate();
+  const login = useSelector((store) => store.login);
   useEffect(() => {
-    const fetchlogin = async () => {
-      const result = await axios.get(
-        SERVER + "/noq/noqunreservedticket/login",
-        { withCredentials: true }
-      );
-    };
-    fetchlogin();
+    if (!login) {
+      navigate("/");
+    } else {
+      const fetchlogin = async () => {
+        const result = await axios.get(
+          SERVER + "/noq/noqunreservedticket/login",
+          { withCredentials: true }
+        );
+      };
+      fetchlogin();
+    }
   }, []);
   const handleSubmit = (e) => {
     e.preventDefault();

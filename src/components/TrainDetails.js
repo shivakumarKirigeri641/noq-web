@@ -1,9 +1,13 @@
+import axios from "axios";
+import { SERVER } from "../utils/constants";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
-
+import { useDispatch, useSelector } from "react-redux";
+import { addStationsList } from "../store/slices/stationsListSlice";
 export default function TrainDetails() {
   const today = new Date();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const tomorrow = new Date();
   tomorrow.setDate(today.getDate() + 1);
 
@@ -23,8 +27,24 @@ export default function TrainDetails() {
   const destinationInputRef = useRef(null);
   const dateInputRef = useRef(null);
 
-  const stations = ["Bangalore", "Chennai", "Mumbai", "Delhi", "Hyderabad"];
-
+  const stations = useSelector((store) => store.stationsList);
+  const login = useSelector((store) => store.login);
+  console.log(login);
+  useEffect(() => {
+    if (!login) {
+      navigate("/");
+    } else {
+      const fetchstations = async () => {
+        const result = await axios.get(
+          SERVER + "/noq/noqunreservedticket/stations",
+          { withCredentials: true }
+        );
+        console.log(result?.data?.data);
+        dispatch(addStationsList(result?.data?.data));
+      };
+      fetchstations();
+    }
+  }, []);
   useEffect(() => {
     function handleClickOutside(event) {
       if (formRef.current && !formRef.current.contains(event.target)) {
