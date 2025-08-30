@@ -6,6 +6,7 @@ const Home = () => {
   return (
     <div>
       <p>Welcome to NoQ</p>
+      <img src={require("../images/logo.png")}></img>
       <button
         onClick={() => {
           navigate("/loginoptions");
