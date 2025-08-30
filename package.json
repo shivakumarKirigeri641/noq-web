@@ -1,0 +1,31 @@
+{
+  "name": "noq-web",
+  "version": "1.0.0",
+  "description": "UI for NoQ for digital unreserved ticketing system",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "parcel src/index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shivakumarKirigeri641/noq-web.git"
+  },
+  "author": "Shivakumar",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shivakumarKirigeri641/noq-web/issues"
+  },
+  "homepage": "https://github.com/shivakumarKirigeri641/noq-web#readme",
+  "dependencies": {
+    "@reduxjs/toolkit": "^2.8.2",
+    "parcel": "^2.13.3",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-redux": "^9.2.0",
+    "react-router": "^7.8.2"
+  },
+  "devDependencies": {
+    "process": "^0.11.10"
+  }
+}
