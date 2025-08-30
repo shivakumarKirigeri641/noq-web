@@ -68,7 +68,7 @@ export default function PassengerDetails() {
           onClick={() => navigate(-1)}
           className="absolute top-4 left-4 flex items-center gap-2 
                      bg-gradient-to-r from-indigo-100 to-blue-100 
-                     text-indigo-700 font-medium px-4 py-2 rounded-full 
+                     text-indigo-700 font-medium px-4 py-1 rounded-full 
                      shadow-sm hover:shadow-md hover:from-indigo-200 hover:to-blue-200 
                      transition-all duration-200 ease-in-out"
         >
@@ -76,7 +76,7 @@ export default function PassengerDetails() {
           <span className="text-sm">Back</span>
         </button>
 
-        <header className="mb-8 text-center">
+        <header className="my-8 text-center">
           <h1 className="text-2xl font-bold text-slate-800">
             Passenger Details
           </h1>

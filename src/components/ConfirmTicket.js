@@ -54,7 +54,7 @@ export default function ConfirmTicket() {
           </div>
 
           {/* Ticket Body */}
-          <div className="space-y-3">
+          <div className="space-y-3 text-sm">
             <div className="flex justify-between">
               <span className="font-medium">From</span>
               <span>{ticketData.from}</span>
