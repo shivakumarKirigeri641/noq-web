@@ -5,6 +5,7 @@ import TrainDetails from "./components/TrainDetails";
 import ConfirmTicket from "./components/ConfirmTicket";
 import ReviewBooking from "./components/ReviewBooking";
 import DownloadTicket from "./components/DownloadTicket";
+import Home from "./components/Home";
 import { Provider } from "react-redux";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router";
 const AppLayout = () => {
@@ -23,6 +24,10 @@ const appRouter = createBrowserRouter([
     children: [
       {
         path: "/",
+        element: <Home />,
+      },
+      {
+        path: "/loginoptions",
         element: <LoginOptions />,
       },
       {
