@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router";
 
 export default function PassengerDetails() {
   const trains = [
@@ -6,7 +7,7 @@ export default function PassengerDetails() {
     { id: 2, number: "202", name: "Superfast", fare: 180, arrival: "10:15 AM" },
     { id: 3, number: "303", name: "Passenger", fare: 60, arrival: "01:45 PM" },
   ];
-
+  const navigate = useNavigate();
   const [selectedTrain, setSelectedTrain] = useState(null);
   const [mobile, setMobile] = useState("");
   const [adults, setAdults] = useState(1);
@@ -35,7 +36,7 @@ export default function PassengerDetails() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validate()) return;
-    alert(
+    /*alert(
       `Booking confirmed!
 Train: ${selectedTrain.number} - ${selectedTrain.name}
 Adults: ${adults}
@@ -44,7 +45,8 @@ Mobile: ${mobile}
 Booking for: ${bookingFor}
 PH: ${isPH ? "Yes" : "No"}
 Total Fare: ₹${totalFare}`
-    );
+    );*/
+    navigate("/confirmticket");
   };
 
   // Validation popup if clicking outside with invalid inputs
