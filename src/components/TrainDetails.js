@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { addStationsList } from "../store/slices/stationsListSlice";
+
 export default function TrainDetails() {
   const today = new Date();
   const navigate = useNavigate();
@@ -14,8 +15,12 @@ export default function TrainDetails() {
   const todayStr = today.toISOString().split("T")[0];
   const tomorrowStr = tomorrow.toISOString().split("T")[0];
 
-  const [source, setSource] = useState("");
-  const [destination, setDestination] = useState("");
+  // separate input text and selected station objects
+  const [sourceInput, setSourceInput] = useState("");
+  const [destinationInput, setDestinationInput] = useState("");
+  const [source, setSource] = useState(null);
+  const [destination, setDestination] = useState(null);
+
   const [date, setDate] = useState(todayStr);
   const [error, setError] = useState("");
 
@@ -29,7 +34,7 @@ export default function TrainDetails() {
 
   const stations = useSelector((store) => store.stationsList);
   const login = useSelector((store) => store.login);
-  console.log(login);
+
   useEffect(() => {
     if (!login) {
       navigate("/");
@@ -39,12 +44,12 @@ export default function TrainDetails() {
           SERVER + "/noq/noqunreservedticket/stations",
           { withCredentials: true }
         );
-        console.log(result?.data?.data);
         dispatch(addStationsList(result?.data?.data));
       };
       fetchstations();
     }
   }, []);
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (formRef.current && !formRef.current.contains(event.target)) {
@@ -62,16 +67,26 @@ export default function TrainDetails() {
       setError("Please select both source and destination");
       return;
     }
-    navigate("/passengerdetails");
+    navigate("/passengerdetails", {
+      state: {
+        sourceCode: source.code,
+        destinationCode: destination.code,
+        date,
+      },
+    });
   };
 
   const handleKeyDown = (e, type) => {
-    const inputValue = type === "source" ? source : destination;
+    const inputValue = type === "source" ? sourceInput : destinationInput;
+
     const suggestions = stations.filter(
       (st) =>
-        st.toLowerCase().includes(inputValue.toLowerCase()) &&
-        (type === "source" ? st !== destination : st !== source)
+        st.name.toLowerCase().includes(inputValue.toLowerCase()) &&
+        (type === "source"
+          ? st._id !== destination?._id
+          : st._id !== source?._id)
     );
+
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setHighlightIndex((prev) =>
@@ -86,11 +101,13 @@ export default function TrainDetails() {
         const selected = suggestions[highlightIndex];
         if (type === "source") {
           setSource(selected);
+          setSourceInput(`${selected.name} (${selected.code})`);
           setSourceActive(false);
           setHighlightIndex(-1);
           destinationInputRef.current.focus();
         } else {
           setDestination(selected);
+          setDestinationInput(`${selected.name} (${selected.code})`);
           setDestinationActive(false);
           setHighlightIndex(-1);
           dateInputRef.current.focus();
@@ -128,9 +145,10 @@ export default function TrainDetails() {
           </label>
           <input
             type="text"
-            value={source}
+            value={sourceInput}
             onChange={(e) => {
-              setSource(e.target.value);
+              setSourceInput(e.target.value);
+              setSource(null);
               setSourceActive(true);
               setHighlightIndex(-1);
             }}
@@ -147,14 +165,15 @@ export default function TrainDetails() {
               {stations
                 .filter(
                   (st) =>
-                    st.toLowerCase().includes(source.toLowerCase()) &&
-                    st !== destination
+                    st.name.toLowerCase().includes(sourceInput.toLowerCase()) &&
+                    st._id !== destination?._id
                 )
                 .map((st, i) => (
                   <li
-                    key={st}
+                    key={st._id}
                     onClick={() => {
                       setSource(st);
+                      setSourceInput(`${st.name} (${st.code})`);
                       setSourceActive(false);
                       destinationInputRef.current.focus();
                     }}
@@ -164,7 +183,7 @@ export default function TrainDetails() {
                         : "hover:bg-gray-100"
                     }`}
                   >
-                    {st}
+                    {st.name} ({st.code})
                   </li>
                 ))}
             </ul>
@@ -179,9 +198,10 @@ export default function TrainDetails() {
           <input
             type="text"
             ref={destinationInputRef}
-            value={destination}
+            value={destinationInput}
             onChange={(e) => {
-              setDestination(e.target.value);
+              setDestinationInput(e.target.value);
+              setDestination(null);
               setDestinationActive(true);
               setHighlightIndex(-1);
             }}
@@ -198,14 +218,17 @@ export default function TrainDetails() {
               {stations
                 .filter(
                   (st) =>
-                    st.toLowerCase().includes(destination.toLowerCase()) &&
-                    st !== source
+                    st.name
+                      .toLowerCase()
+                      .includes(destinationInput.toLowerCase()) &&
+                    st._id !== source?._id
                 )
                 .map((st, i) => (
                   <li
-                    key={st}
+                    key={st._id}
                     onClick={() => {
                       setDestination(st);
+                      setDestinationInput(`${st.name} (${st.code})`);
                       setDestinationActive(false);
                       dateInputRef.current.focus();
                     }}
@@ -215,7 +238,7 @@ export default function TrainDetails() {
                         : "hover:bg-gray-100"
                     }`}
                   >
-                    {st}
+                    {st.name} ({st.code})
                   </li>
                 ))}
             </ul>
