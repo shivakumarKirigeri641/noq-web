@@ -42,8 +42,6 @@ export default function TrainDetails() {
       setError("Please select both source and destination");
       return;
     }
-    //setError("");
-    //alert(`Searching trains from ${source} to ${destination} on ${date}`);
     navigate("/passengerdetails");
   };
 
@@ -87,6 +85,18 @@ export default function TrainDetails() {
         ref={formRef}
         className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-8 relative border border-gray-100"
       >
+        {/* Back Button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="absolute top-4 left-4 flex items-center gap-2 
+             bg-gradient-to-r from-indigo-100 to-blue-100 
+             text-indigo-700 font-medium px-4 py-2 rounded-full 
+             shadow-sm hover:shadow-md hover:from-indigo-200 hover:to-blue-200 
+             transition-all duration-200 ease-in-out"
+        >
+          ← Back
+        </button>
+
         <h2 className="text-2xl font-bold mb-8 text-center text-gray-800">
           🚆 Train details
         </h2>

@@ -36,16 +36,6 @@ export default function PassengerDetails() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validate()) return;
-    /*alert(
-      `Booking confirmed!
-Train: ${selectedTrain.number} - ${selectedTrain.name}
-Adults: ${adults}
-Children: ${children}
-Mobile: ${mobile}
-Booking for: ${bookingFor}
-PH: ${isPH ? "Yes" : "No"}
-Total Fare: ₹${totalFare}`
-    );*/
     navigate("/confirmticket");
   };
 
@@ -72,7 +62,21 @@ Total Fare: ₹${totalFare}`
         onSubmit={handleSubmit}
         className="relative w-full max-w-3xl bg-white border border-slate-100 shadow-2xl rounded-3xl p-8"
       >
-        <header className="mb-8">
+        {/* Back Button */}
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="absolute top-4 left-4 flex items-center gap-2 
+                     bg-gradient-to-r from-indigo-100 to-blue-100 
+                     text-indigo-700 font-medium px-4 py-2 rounded-full 
+                     shadow-sm hover:shadow-md hover:from-indigo-200 hover:to-blue-200 
+                     transition-all duration-200 ease-in-out"
+        >
+          <span className="text-lg">←</span>
+          <span className="text-sm">Back</span>
+        </button>
+
+        <header className="mb-8 text-center">
           <h1 className="text-2xl font-bold text-slate-800">
             Passenger Details
           </h1>
@@ -274,7 +278,7 @@ Total Fare: ₹${totalFare}`
           type="submit"
           className="w-full py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 shadow-lg"
         >
-          Confirm Booking
+          Confirm & pay
         </button>
 
         {/* Global error */}

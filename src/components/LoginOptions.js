@@ -12,7 +12,6 @@ const LoginOptions = () => {
         SERVER + "/noq/noqunreservedticket/login",
         { withCredentials: true }
       );
-      console.log(result);
     };
     fetchlogin();
   }, []);

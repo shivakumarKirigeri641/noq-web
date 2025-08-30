@@ -1,11 +1,12 @@
 import React, { useRef } from "react";
+import { useNavigate } from "react-router"; // ✅ import navigation hook
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
-import { toPng } from "html-to-image"; // ✅ make sure this import is present
+import { toPng } from "html-to-image";
 import QRCode from "react-qr-code";
+
 export default function ConfirmTicket() {
   const ticketRef = useRef();
+  const navigate = useNavigate(); // ✅ navigation
 
   const ticketData = {
     pnr: "TXN8932749823",
@@ -99,13 +100,20 @@ export default function ConfirmTicket() {
           </div>
         </div>
 
-        {/* Download Button */}
-        <div className="mt-4 text-center">
+        {/* Action Buttons */}
+        <div className="mt-4 flex justify-center gap-4">
           <button
             onClick={downloadPDF}
             className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-md"
           >
             Download Ticket
+          </button>
+
+          <button
+            onClick={() => navigate("/")}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md"
+          >
+            Home
           </button>
         </div>
       </div>
