@@ -45,11 +45,14 @@ const LoginOptions = () => {
               className="w-full rounded-2xl bg-blue-500 text-white py-2 px-4 hover:bg-blue-600 transition"
               onClick={handleSubmit}
             >
-              Unreserved Ticket
+              Book Unreserved Ticket
             </button>
             <button
               type="submit"
               className="w-full rounded-2xl bg-blue-500 text-white py-2 px-4 hover:bg-blue-600 transition my-2"
+              onClick={() => {
+                navigate("/downloadticket");
+              }}
             >
               Download unreserved ticket
             </button>

@@ -97,7 +97,7 @@ export default function TrainDetails() {
           ← Back
         </button>
 
-        <h2 className="text-2xl font-bold mb-8 text-center text-gray-800">
+        <h2 className="text-2xl font-bold my-8 text-center text-gray-800">
           🚆 Train details
         </h2>
 
