@@ -1,4 +1,5 @@
 import ReactDOM from "react-dom/client";
+import PassengerDetails from "./components/PassengerDetails";
 import appStore from "./store/appStore";
 import LoginOptions from "./components/LoginOptions";
 import TrainDetails from "./components/TrainDetails";
@@ -33,6 +34,10 @@ const appRouter = createBrowserRouter([
       {
         path: "/traindetails",
         element: <TrainDetails />,
+      },
+      {
+        path: "/passengerdetails",
+        element: <PassengerDetails />,
       },
       {
         path: "/reviewbooking",
