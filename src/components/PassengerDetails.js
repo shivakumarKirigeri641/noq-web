@@ -9,26 +9,64 @@ export default function PassengerDetails() {
   ];
   const navigate = useNavigate();
   const [selectedTrain, setSelectedTrain] = useState(null);
-  const [mobile, setMobile] = useState("");
+
+  const [bookingFor, setBookingFor] = useState("self");
+  const [travellerMobile, setTravellerMobile] = useState("");
+  const [bookerMobile, setBookerMobile] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [verified, setVerified] = useState(false);
+
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
   const [isPH, setIsPH] = useState(false);
-  const [bookingFor, setBookingFor] = useState("self");
+
   const [errors, setErrors] = useState({});
   const formRef = useRef(null);
 
   const selectedFare = selectedTrain?.fare ?? 0;
-
-  // Fare calculation
   const subtotal = selectedFare * adults + selectedFare * 0.5 * children;
   const phDiscount = isPH ? Math.round(subtotal * 0.5) : 0;
   const totalFare = Math.max(0, Math.round(subtotal - phDiscount));
 
+  // OTP Mock functions
+  const sendOtp = () => {
+    setOtpSent(true);
+    setVerified(false);
+    alert("OTP sent! (For demo, use 1234)");
+  };
+
+  const verifyOtp = () => {
+    if (otp === "1234") {
+      setVerified(true);
+      alert("OTP Verified ✅");
+    } else {
+      alert("Invalid OTP ❌ (Hint: 1234)");
+    }
+  };
+
   const validate = () => {
     const next = {};
     if (!selectedTrain) next.train = "Please select a train.";
-    if (!/^\d{10}$/.test(mobile))
-      next.mobile = "Enter a valid 10-digit mobile number.";
+
+    if (bookingFor === "self") {
+      if (!/^\d{10}$/.test(travellerMobile)) {
+        next.travellerMobile = "Enter valid 10-digit mobile number.";
+      }
+    } else {
+      if (!/^\d{10}$/.test(bookerMobile)) {
+        next.bookerMobile = "Enter valid 10-digit booker's mobile number.";
+      }
+      if (!/^\d{10}$/.test(travellerMobile)) {
+        next.travellerMobile =
+          "Enter valid 10-digit traveller's mobile number.";
+      }
+    }
+
+    if (!verified) {
+      next.otp = "OTP must be verified before proceeding.";
+    }
+
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -39,11 +77,11 @@ export default function PassengerDetails() {
     navigate("/confirmticket");
   };
 
-  // Validation popup if clicking outside with invalid inputs
+  // Outside click global validation
   useEffect(() => {
     const onDown = (e) => {
       if (formRef.current && !formRef.current.contains(e.target)) {
-        if (!selectedTrain || !/^\d{10}$/.test(mobile)) {
+        if (!selectedTrain || (!travellerMobile && !bookerMobile)) {
           setErrors((prev) => ({
             ...prev,
             _global: "Please complete the required fields.",
@@ -53,7 +91,7 @@ export default function PassengerDetails() {
     };
     document.addEventListener("mousedown", onDown);
     return () => document.removeEventListener("mousedown", onDown);
-  }, [selectedTrain, mobile]);
+  }, [selectedTrain, travellerMobile, bookerMobile]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 flex items-center justify-center p-6">
@@ -76,6 +114,7 @@ export default function PassengerDetails() {
           <span className="text-sm">Back</span>
         </button>
 
+        {/* Header */}
         <header className="my-8 text-center">
           <h1 className="text-2xl font-bold text-slate-800">
             Passenger Details
@@ -128,31 +167,143 @@ export default function PassengerDetails() {
           )}
         </section>
 
-        {/* Mobile Number */}
-        <section className="mb-8 relative">
-          <label className="block text-sm font-semibold text-slate-700 mb-2">
-            Mobile Number
-          </label>
-          <input
-            type="text"
-            value={mobile}
-            onChange={(e) => setMobile(e.target.value)}
-            placeholder="Enter 10-digit mobile number"
-            className={`w-full rounded-xl border px-4 py-3 text-slate-800 shadow-sm focus:outline-none
-              ${
-                /^\d{10}$/.test(mobile)
-                  ? "border-green-500 bg-green-50"
-                  : "border-slate-300"
-              }`}
-          />
-          {errors.mobile && (
-            <div className="absolute -bottom-6 left-0 bg-red-500 text-white text-xs px-3 py-1 rounded">
-              {errors.mobile}
-            </div>
-          )}
+        {/* Booking For */}
+        <section className="mb-6">
+          <h2 className="text-sm font-semibold text-slate-700 mb-3 uppercase tracking-wide">
+            Booking For
+          </h2>
+          <div className="flex gap-4">
+            {["self", "others"].map((type) => (
+              <label
+                key={type}
+                className={`flex-1 rounded-xl border px-4 py-3 text-center cursor-pointer
+                ${
+                  bookingFor === type
+                    ? "border-indigo-500 bg-indigo-50"
+                    : "border-slate-300 hover:bg-slate-50"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="bookingFor"
+                  value={type}
+                  checked={bookingFor === type}
+                  onChange={() => {
+                    setBookingFor(type);
+                    setOtpSent(false);
+                    setVerified(false);
+                  }}
+                  className="hidden"
+                />
+                {type === "self" ? "Self" : "Others"}
+              </label>
+            ))}
+          </div>
         </section>
 
-        {/* Adult and Child Counts */}
+        {/* Mobile Inputs */}
+        <section className="mb-8 space-y-4">
+          {bookingFor === "others" && (
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+                Booker’s Mobile Number
+              </label>
+              <input
+                type="text"
+                value={bookerMobile}
+                onChange={(e) =>
+                  setBookerMobile(e.target.value.replace(/\D/g, ""))
+                }
+                placeholder="Enter 10-digit booker's number"
+                maxLength={10}
+                className={`w-full rounded-xl border px-4 py-3 text-slate-800 shadow-sm focus:outline-none
+                  ${
+                    /^\d{10}$/.test(bookerMobile)
+                      ? "border-green-500 bg-green-50"
+                      : "border-slate-300"
+                  }`}
+              />
+              {errors.bookerMobile && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.bookerMobile}
+                </p>
+              )}
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
+              Traveller’s Mobile Number
+            </label>
+            <input
+              type="text"
+              value={travellerMobile}
+              onChange={(e) =>
+                setTravellerMobile(e.target.value.replace(/\D/g, ""))
+              }
+              placeholder="Enter 10-digit traveller's number"
+              maxLength={10}
+              className={`w-full rounded-xl border px-4 py-3 text-slate-800 shadow-sm focus:outline-none
+                ${
+                  /^\d{10}$/.test(travellerMobile)
+                    ? "border-green-500 bg-green-50"
+                    : "border-slate-300"
+                }`}
+            />
+            {errors.travellerMobile && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.travellerMobile}
+              </p>
+            )}
+          </div>
+
+          {/* OTP Section */}
+          <div>
+            <button
+              type="button"
+              onClick={sendOtp}
+              disabled={
+                bookingFor === "self"
+                  ? travellerMobile.length !== 10
+                  : bookerMobile.length !== 10
+              }
+              className={`w-full py-2 rounded-lg mb-2 text-white font-medium 
+                ${
+                  (bookingFor === "self" && travellerMobile.length === 10) ||
+                  (bookingFor === "others" && bookerMobile.length === 10)
+                    ? "bg-blue-600 hover:bg-blue-700"
+                    : "bg-gray-400 cursor-not-allowed"
+                }`}
+            >
+              Get OTP
+            </button>
+
+            {otpSent && (
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                  placeholder="Enter OTP"
+                  maxLength={4}
+                  className="flex-1 rounded-xl border px-4 py-2 shadow-sm"
+                />
+                <button
+                  type="button"
+                  onClick={verifyOtp}
+                  className="px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700"
+                >
+                  Verify
+                </button>
+              </div>
+            )}
+            {errors.otp && (
+              <p className="text-red-500 text-sm mt-1">{errors.otp}</p>
+            )}
+          </div>
+        </section>
+
+        {/* Adults & Children */}
         <section className="grid grid-cols-2 gap-6 mb-8">
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-2">
@@ -208,51 +359,6 @@ export default function PassengerDetails() {
           )}
         </section>
 
-        {/* Booking For */}
-        <section className="mb-8">
-          <h2 className="text-sm font-semibold text-slate-700 mb-3 uppercase tracking-wide">
-            Booking For
-          </h2>
-          <div className="flex gap-4">
-            <label
-              className={`flex-1 rounded-xl border px-4 py-3 text-center cursor-pointer
-              ${
-                bookingFor === "self"
-                  ? "border-indigo-500 bg-indigo-50"
-                  : "border-slate-300 hover:bg-slate-50"
-              }`}
-            >
-              <input
-                type="radio"
-                name="bookingFor"
-                value="self"
-                checked={bookingFor === "self"}
-                onChange={() => setBookingFor("self")}
-                className="hidden"
-              />
-              Self
-            </label>
-            <label
-              className={`flex-1 rounded-xl border px-4 py-3 text-center cursor-pointer
-              ${
-                bookingFor === "others"
-                  ? "border-indigo-500 bg-indigo-50"
-                  : "border-slate-300 hover:bg-slate-50"
-              }`}
-            >
-              <input
-                type="radio"
-                name="bookingFor"
-                value="others"
-                checked={bookingFor === "others"}
-                onChange={() => setBookingFor("others")}
-                className="hidden"
-              />
-              Others
-            </label>
-          </div>
-        </section>
-
         {/* Fare Summary */}
         <section className="mb-8 p-5 bg-slate-50 rounded-2xl border border-slate-200">
           <h2 className="text-sm font-semibold text-slate-700 mb-3 uppercase tracking-wide">
@@ -278,10 +384,9 @@ export default function PassengerDetails() {
           type="submit"
           className="w-full py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 shadow-lg"
         >
-          Confirm & pay
+          Confirm & Pay
         </button>
 
-        {/* Global error */}
         {errors._global && (
           <div className="absolute top-2 right-2 bg-red-600 text-white text-xs px-3 py-2 rounded shadow">
             {errors._global}
