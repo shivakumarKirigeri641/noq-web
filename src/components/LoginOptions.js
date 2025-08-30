@@ -39,14 +39,21 @@ const LoginOptions = () => {
           <h2 className="text-2xl font-bold mb-2">Welcome to NoQ</h2>
           <p className="text-gray-600 mb-6">No more in the queue</p>
 
-          <form onSubmit={handleSubmit}>
+          <div>
             <button
               type="submit"
               className="w-full rounded-2xl bg-blue-500 text-white py-2 px-4 hover:bg-blue-600 transition"
+              onClick={handleSubmit}
             >
-              Submit
+              Unreserved Ticket
             </button>
-          </form>
+            <button
+              type="submit"
+              className="w-full rounded-2xl bg-blue-500 text-white py-2 px-4 hover:bg-blue-600 transition my-2"
+            >
+              Download unreserved ticket
+            </button>
+          </div>
         </div>
       </motion.div>
     </div>
