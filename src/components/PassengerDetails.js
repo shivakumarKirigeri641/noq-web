@@ -33,7 +33,12 @@ export default function PassengerDetails() {
   const sendOtp = () => {
     setOtpSent(true);
     setVerified(false);
-    alert("OTP sent! (For demo, use 1234)");
+    if ("others" === bookingFor && bookerMobile === travellerMobile) {
+      setOtpSent(false);
+      alert("Booker's mobile & Traveller's mobile cannot be same!");
+    } else {
+      alert("OTP sent! (For demo, use 1234)");
+    }
   };
 
   const verifyOtp = () => {
@@ -238,9 +243,9 @@ export default function PassengerDetails() {
             <input
               type="text"
               value={travellerMobile}
-              onChange={(e) =>
-                setTravellerMobile(e.target.value.replace(/\D/g, ""))
-              }
+              onChange={(e) => {
+                setTravellerMobile(e.target.value.replace(/\D/g, ""));
+              }}
               placeholder="Enter 10-digit traveller's number"
               maxLength={10}
               className={`w-full rounded-xl border px-4 py-3 text-slate-800 shadow-sm focus:outline-none
@@ -382,7 +387,12 @@ export default function PassengerDetails() {
         {/* Submit */}
         <button
           type="submit"
-          className="w-full py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 shadow-lg"
+          className={
+            totalFare === 0
+              ? "w-full py-3 rounded-xl bg-gray-400 text-white font-semibold hover:bg-indigo-700 shadow-lg"
+              : "w-full py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 shadow-lg"
+          }
+          disabled={totalFare === 0 ? true : false}
         >
           Confirm & Pay
         </button>
