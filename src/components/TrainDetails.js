@@ -49,6 +49,7 @@ export default function TrainDetails() {
           SERVER + "/noq/noqunreservedticket/stations",
           { withCredentials: true }
         );
+        console.log(result?.data?.data);
         dispatch(addStationsList(result?.data?.data));
       };
       fetchstations();

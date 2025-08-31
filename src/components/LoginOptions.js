@@ -13,10 +13,12 @@ const LoginOptions = () => {
       navigate("/");
     } else {
       const fetchlogin = async () => {
-        const result = await axios.get(
+        const result = await axios.post(
           SERVER + "/noq/noqunreservedticket/login",
+          {},
           { withCredentials: true }
         );
+        console.log(result?.data);
       };
       fetchlogin();
     }
