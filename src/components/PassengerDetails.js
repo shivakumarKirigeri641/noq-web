@@ -35,7 +35,7 @@ export default function PassengerDetails() {
   const [errors, setErrors] = useState({});
   const formRef = useRef(null);
 
-  const selectedFare = selectedTrain?.fare ?? 0;
+  const selectedFare = selectedTrain?.priceDetails[0].totalFare ?? 0;
   const subtotal = selectedFare * adults + selectedFare * 0.5 * children;
   const phDiscount = isPH ? Math.round(subtotal * 0.5) : 0;
   const totalFare = Math.max(0, Math.round(subtotal - phDiscount));
