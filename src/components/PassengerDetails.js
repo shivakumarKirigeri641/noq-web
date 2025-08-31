@@ -4,14 +4,9 @@ import { source } from "framer-motion/client";
 import { useState, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
-import { SERVER } from "../utils/constants";
+import { SERVER, getArrivalDepartureTime } from "../utils/constants";
 
 export default function PassengerDetails() {
-  const trains = [
-    { id: 1, number: "101", name: "Express", fare: 120, arrival: "08:30 AM" },
-    { id: 2, number: "202", name: "Superfast", fare: 180, arrival: "10:15 AM" },
-    { id: 3, number: "303", name: "Passenger", fare: 60, arrival: "01:45 PM" },
-  ];
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const srcSelected = useSelector(
@@ -99,8 +94,9 @@ export default function PassengerDetails() {
   };
 
   // Outside click global validation
-  useEffect(() => {
+  /*useEffect(() => {
     const onDown = (e) => {
+      console.log("check");
       if (formRef.current && !formRef.current.contains(e.target)) {
         if (!selectedTrain || (!travellerMobile && !bookerMobile)) {
           setErrors((prev) => ({
@@ -112,10 +108,10 @@ export default function PassengerDetails() {
     };
     document.addEventListener("mousedown", onDown);
     return () => document.removeEventListener("mousedown", onDown);
-  }, [selectedTrain, travellerMobile, bookerMobile]);
+  }, [selectedTrain, travellerMobile, bookerMobile]);*/
   const login = useSelector((store) => store.login);
   let trains_new = useSelector((store) => store.availableTrainsList);
-  console.log(trains);
+  console.log(trains_new);
   useEffect(() => {
     try {
       if (!login) {
@@ -140,7 +136,6 @@ export default function PassengerDetails() {
     } catch (err) {
       console.log(err.message);
     }
-    console.log(trains_new);
   }, []);
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 flex items-center justify-center p-6">
@@ -196,42 +191,61 @@ export default function PassengerDetails() {
           <h2 className="text-sm font-semibold text-slate-700 mb-3 uppercase tracking-wide">
             Available Trains
           </h2>
-          <div className="grid gap-3">
-            {trains.map((t) => (
+          <div className="grid gap-3 text-sm">
+            {trains_new?.map((t) => (
               <label
-                key={t?.trainDetails?.trainNumber}
-                className={`group flex items-center justify-between rounded-2xl border p-4 cursor-pointer transition
+                key={t?.traindDetails?.trainNumber}
+                className={`group flex items-center justify-between rounded-2xl border cursor-pointer transition
                 ${
-                  selectedTrain?.id === t.id
-                    ? "border-indigo-500 bg-indigo-50/70"
-                    : "border-slate-200 hover:bg-slate-50"
+                  selectedTrain?.traindDetails?.trainNumber ===
+                  t?.traindDetails?.trainNumber
+                    ? "border-indigo-500 bg-indigo-50/70 p-1"
+                    : "border-slate-200 hover:bg-slate-50 p-1"
                 }`}
               >
-                <div>
-                  <div className="font-semibold text-slate-800">
-                    {t?.trainDetails?.trainNumber} -{" "}
-                    {t?.trainDetails?.trainName}
+                <div className="flex justify-between items-center ">
+                  <div className="">
+                    <div className="font-semibold text-slate-800 py-1p-2 rounded-2xl">
+                      {t?.traindDetails?.trainNumber} -{" "}
+                      {t?.traindDetails?.trainName}
+                    </div>
+                    <div className="text-xs font-semibold my-1 text-slate-500 p-2">
+                      Fare: ₹{t?.priceDetails[0].totalFare} | Arrival:{" "}
+                      {
+                        getArrivalDepartureTime(
+                          srcSelected?.code,
+                          t?.traindDetails?.stationList
+                        )?.arrivalTime
+                      }{" "}
+                      | departureTime:{" "}
+                      {
+                        getArrivalDepartureTime(
+                          srcSelected?.code,
+                          t?.traindDetails?.stationList
+                        )?.departureTime
+                      }
+                    </div>
                   </div>
-                  <div className="text-sm text-slate-500">
-                    Fare: ₹{t.fare} | Arrival: {t.arrival}
-                  </div>
+                  <input
+                    type="radio"
+                    name="train"
+                    value={t?.traindDetails?.trainNumber}
+                    checked={
+                      selectedTrain?.traindDetails?.trainNumber ===
+                      t?.traindDetails?.trainNumber
+                    }
+                    onChange={() => setSelectedTrain(t)}
+                    className="h-5 w-5 accent-indigo-600"
+                  />
                 </div>
-                <input
-                  type="radio"
-                  name="train"
-                  value={t.id}
-                  checked={selectedTrain?.id === t.id}
-                  onChange={() => setSelectedTrain(t)}
-                  className="h-5 w-5 accent-indigo-600"
-                />
               </label>
             ))}
+            {errors.train && (
+              <div className="absolute -bottom-6 left-0 bg-red-500 text-white text-xs px-3 py-1 rounded">
+                {errors.train}
+              </div>
+            )}
           </div>
-          {errors.train && (
-            <div className="absolute -bottom-6 left-0 bg-red-500 text-white text-xs px-3 py-1 rounded">
-              {errors.train}
-            </div>
-          )}
         </section>
 
         {/* Booking For */}
