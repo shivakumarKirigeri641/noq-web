@@ -1,7 +1,10 @@
+import axios from "axios";
+import { addavailableTrainsList } from "../store/slices/availableTrainsListSlice";
 import { source } from "framer-motion/client";
 import { useState, useRef, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
+import { SERVER } from "../utils/constants";
 
 export default function PassengerDetails() {
   const trains = [
@@ -10,14 +13,13 @@ export default function PassengerDetails() {
     { id: 3, number: "303", name: "Passenger", fare: 60, arrival: "01:45 PM" },
   ];
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const srcSelected = useSelector(
     (store) => store?.selectedStationsAndDate?.selectedsource
   );
   const destSelected = useSelector(
     (store) => store?.selectedStationsAndDate?.selecteddestination
   );
-  console.log(srcSelected);
-  console.log(destSelected);
   const journeyDate = useSelector(
     (store) => store.selectedStationsAndDate.journeyDate
   );
@@ -111,7 +113,35 @@ export default function PassengerDetails() {
     document.addEventListener("mousedown", onDown);
     return () => document.removeEventListener("mousedown", onDown);
   }, [selectedTrain, travellerMobile, bookerMobile]);
-
+  const login = useSelector((store) => store.login);
+  let trains_new = useSelector((store) => store.availableTrainsList);
+  console.log(trains);
+  useEffect(() => {
+    try {
+      if (!login) {
+        navigate("/");
+      } else {
+        const fetchTrainList = async () => {
+          const result = await axios.post(
+            SERVER +
+              "/noq/noqunreservedticket/" +
+              srcSelected?.code +
+              "/" +
+              destSelected?.code +
+              "/" +
+              journeyDate,
+            {},
+            { withCredentials: true }
+          );
+          dispatch(addavailableTrainsList(result?.data?.result));
+        };
+        fetchTrainList();
+      }
+    } catch (err) {
+      console.log(err.message);
+    }
+    console.log(trains_new);
+  }, []);
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 flex items-center justify-center p-6">
       <form
@@ -169,7 +199,7 @@ export default function PassengerDetails() {
           <div className="grid gap-3">
             {trains.map((t) => (
               <label
-                key={t.id}
+                key={t?.trainDetails?.trainNumber}
                 className={`group flex items-center justify-between rounded-2xl border p-4 cursor-pointer transition
                 ${
                   selectedTrain?.id === t.id
@@ -179,7 +209,8 @@ export default function PassengerDetails() {
               >
                 <div>
                   <div className="font-semibold text-slate-800">
-                    {t.number} - {t.name}
+                    {t?.trainDetails?.trainNumber} -{" "}
+                    {t?.trainDetails?.trainName}
                   </div>
                   <div className="text-sm text-slate-500">
                     Fare: ₹{t.fare} | Arrival: {t.arrival}
