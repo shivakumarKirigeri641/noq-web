@@ -4,8 +4,8 @@
   "description": "UI for NoQ for digital unreserved ticketing system",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "parcel src/index.html"
+    "test": "echo \"Error: no test specified\" && exit 1",    
+    "start": "parcel src/index.html --host 192.168.10.34 --port 1234"
   },
   "repository": {
     "type": "git",
