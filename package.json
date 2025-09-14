@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/shivakumarKirigeri641/noq-web#readme",
   "dependencies": {
+    "@react-spring/web": "^10.0.2",
     "@reduxjs/toolkit": "^2.8.2",
     "@tailwindcss/postcss": "^4.1.12",
     "antd": "^5.27.3",

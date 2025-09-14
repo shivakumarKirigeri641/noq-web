@@ -1,299 +1,190 @@
-import axios from "axios";
-import { motion, AnimatePresence } from "framer-motion";
-import { SERVER } from "../utils/constants";
-import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router";
-import { useDispatch, useSelector } from "react-redux";
-import { addStationsList } from "../store/slices/stationsListSlice";
-import {
-  addDestination,
-  addJourneyDate,
-  addSource,
-} from "../store/slices/selectedStationsAndDateSlice";
+import React, { useState, useRef, useEffect } from "react";
 
-export default function TrainDetails() {
-  const today = new Date();
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const tomorrow = new Date();
-  tomorrow.setDate(today.getDate() + 1);
+// Sample train data
+const sampleTrains = [
+  {
+    number: "12345",
+    name: "Express One",
+    source: "Bangalore",
+    destination: "Mumbai",
+  },
+  {
+    number: "54321",
+    name: "Express Two",
+    source: "Delhi",
+    destination: "Chennai",
+  },
+  {
+    number: "67890",
+    name: "Express Three",
+    source: "Bangalore",
+    destination: "Chennai",
+  },
+];
 
-  const todayStr = today.toISOString().split("T")[0];
-  const tomorrowStr = tomorrow.toISOString().split("T")[0];
+// TrainDetails Component
+const TrainDetails = ({ goBack }) => {
+  const sources = [...new Set(sampleTrains.map((t) => t.source))];
+  const destinations = [...new Set(sampleTrains.map((t) => t.destination))];
 
-  // separate input text and selected station objects
-  const [sourceInput, setSourceInput] = useState("");
-  const [destinationInput, setDestinationInput] = useState("");
-  const [source, setSource] = useState(null);
-  const [destination, setDestination] = useState(null);
+  const [source, setSource] = useState("");
+  const [destination, setDestination] = useState("");
+  const [showSourceList, setShowSourceList] = useState(false);
+  const [showDestinationList, setShowDestinationList] = useState(false);
+  const [filteredTrains, setFilteredTrains] = useState([]);
 
-  const [date, setDate] = useState(todayStr);
-  const [error, setError] = useState("");
+  const sourceRef = useRef();
+  const destinationRef = useRef();
 
-  const [sourceActive, setSourceActive] = useState(false);
-  const [destinationActive, setDestinationActive] = useState(false);
-  const [highlightIndex, setHighlightIndex] = useState(-1);
+  const today = new Date().toISOString().split("T")[0]; // yyyy-mm-dd
 
-  const formRef = useRef(null);
-  const destinationInputRef = useRef(null);
-  const dateInputRef = useRef(null);
-
-  const stations = useSelector((store) => store.stationsList);
-  const login = useSelector((store) => store.login);
-
+  // Hide suggestion lists on click outside
   useEffect(() => {
-    if (!login) {
-      navigate("/");
-    } else {
-      const fetchstations = async () => {
-        const result = await axios.get(SERVER + "/unreserved-ticket/stations", {
-          withCredentials: true,
-        });
-        console.log(result?.data?.data);
-        dispatch(addStationsList(result?.data?.data));
-      };
-      fetchstations();
-    }
-  }, []);
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (formRef.current && !formRef.current.contains(event.target)) {
-        if (!source || !destination) {
-          setError("Please select both source and destination");
-        }
-      }
-    }
+    const handleClickOutside = (e) => {
+      if (!sourceRef.current.contains(e.target)) setShowSourceList(false);
+      if (!destinationRef.current.contains(e.target))
+        setShowDestinationList(false);
+    };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [source, destination]);
+  }, []);
 
-  const handleSearch = () => {
-    if (!source || !destination) {
-      setError("Please select both source and destination");
-      return;
-    }
-    navigate("/passengerdetails");
+  const handleSelectSource = (value) => {
+    setSource(value);
+    setShowSourceList(false);
+    destinationRef.current.querySelector("input").focus();
   };
 
-  const handleKeyDown = (e, type) => {
-    const inputValue = type === "source" ? sourceInput : destinationInput;
+  const handleSelectDestination = (value) => {
+    setDestination(value);
+    setShowDestinationList(false);
+  };
 
-    const suggestions = stations?.filter(
-      (st) =>
-        (st.station_name.toLowerCase().includes(inputValue.toLowerCase()) ||
-          st.code.toLowerCase().includes(inputValue.toLowerCase())) &&
-        (type === "source"
-          ? st.code !== destination?.code
-          : st.code !== source?.code)
+  const handleSearch = () => {
+    if (!sources.includes(source) || !destinations.includes(destination))
+      return;
+    const results = sampleTrains.filter(
+      (t) => t.source === source && t.destination === destination
     );
-
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setHighlightIndex((prev) =>
-        prev < suggestions?.length - 1 ? prev + 1 : prev
-      );
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setHighlightIndex((prev) => (prev > 0 ? prev - 1 : prev));
-    } else if (e.key === "Enter" || e.key === "Tab") {
-      e.preventDefault();
-      if (highlightIndex >= 0) {
-        const selected = suggestions[highlightIndex];
-        if (type === "source") {
-          setSource(selected);
-          setSourceInput(`${selected.station_name} (${selected.code})`);
-          dispatch(addSource(selected));
-          console.log(selected);
-          setSourceActive(false);
-          setHighlightIndex(-1);
-          destinationInputRef.current.focus();
-        } else {
-          setDestination(selected);
-          dispatch(addDestination(selected));
-          console.log(selected);
-          setDestinationInput(`${selected.station_name} (${selected.code})`);
-          setDestinationActive(false);
-          setHighlightIndex(-1);
-          dateInputRef.current.focus();
-        }
-      }
-    }
+    setFilteredTrains(results);
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-6">
-      <div
-        ref={formRef}
-        className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-8 relative border border-gray-100"
-      >
-        <h2 className="text-2xl font-bold my-8 text-center text-gray-800">
-          🚆 Journey details
-        </h2>
+    <div className="flex flex-col space-y-4">
+      <h2 className="text-xl font-bold text-center text-yellow-300">
+        Search Trains
+      </h2>
 
-        {/* Source */}
-        <div className="mb-6 relative">
-          <label className="block mb-2 text-sm font-semibold text-gray-700">
-            Source Station
-          </label>
+      {/* Input Fields */}
+      <div className="flex flex-col space-y-3">
+        <div ref={sourceRef} className="relative">
           <input
             type="text"
-            value={sourceInput}
+            value={source}
             onChange={(e) => {
-              setSourceInput(e.target.value);
-              setSource(null);
-              setSourceActive(true);
-              setHighlightIndex(-1);
+              setSource(e.target.value);
+              setShowSourceList(true);
             }}
-            onFocus={() => {
-              setSourceActive(true);
-              setHighlightIndex(-1);
-            }}
-            onKeyDown={(e) => handleKeyDown(e, "source")}
-            placeholder="Enter source station"
-            className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition text-gray-800"
+            onFocus={() => setShowSourceList(true)}
+            placeholder="Source"
+            className="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
           />
-          {sourceActive && (
-            <ul className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto z-10">
-              {stations
-                ?.filter(
-                  (st) =>
-                    (st.station_name
-                      .toLowerCase()
-                      .includes(sourceInput.toLowerCase()) ||
-                      st.code
-                        .toLowerCase()
-                        .includes(sourceInput.toLowerCase())) &&
-                    st.code !== destination?.code
-                )
-                .map((st, i) => (
+          {showSourceList && (
+            <ul className="absolute top-full left-0 right-0 bg-white/90 text-black rounded-lg max-h-32 overflow-y-auto z-10">
+              {sources
+                .filter((s) => s.toLowerCase().includes(source.toLowerCase()))
+                .map((s) => (
                   <li
-                    key={st.code}
-                    onClick={() => {
-                      setSource(st);
-                      dispatch(addSource(st));
-                      setSourceInput(`${st.station_name} (${st.code})`);
-                      setSourceActive(false);
-                      destinationInputRef.current.focus();
-                    }}
-                    className={`px-3 py-2 cursor-pointer transition ${
-                      highlightIndex === i
-                        ? "bg-indigo-100 text-indigo-700"
-                        : "hover:bg-gray-100"
-                    }`}
+                    key={s}
+                    className="px-3 py-1 hover:bg-yellow-200 cursor-pointer"
+                    onClick={() => handleSelectSource(s)}
                   >
-                    {st.station_name} ({st.code})
+                    {s}
                   </li>
                 ))}
             </ul>
           )}
         </div>
 
-        {/* Destination */}
-        <div className="mb-6 relative">
-          <label className="block mb-2 text-sm font-semibold text-gray-700">
-            Destination Station
-          </label>
+        <div ref={destinationRef} className="relative">
           <input
             type="text"
-            ref={destinationInputRef}
-            value={destinationInput}
+            value={destination}
             onChange={(e) => {
-              setDestinationInput(e.target.value);
-              setDestination(null);
-              setDestinationActive(true);
-              setHighlightIndex(-1);
+              setDestination(e.target.value);
+              setShowDestinationList(true);
             }}
-            onFocus={() => {
-              setDestinationActive(true);
-              setHighlightIndex(-1);
-            }}
-            onKeyDown={(e) => handleKeyDown(e, "destination")}
-            placeholder="Enter destination station"
-            className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition text-gray-800"
+            onFocus={() => setShowDestinationList(true)}
+            placeholder="Destination"
+            className="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
           />
-          {destinationActive && (
-            <ul className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto z-10">
-              {stations
-                .filter(
-                  (st) =>
-                    (st.station_name
-                      .toLowerCase()
-                      .includes(destinationInput.toLowerCase()) ||
-                      st.code
-                        .toLowerCase()
-                        .includes(destinationInput.toLowerCase())) &&
-                    st.code !== source?.code
+          {showDestinationList && (
+            <ul className="absolute top-full left-0 right-0 bg-white/90 text-black rounded-lg max-h-32 overflow-y-auto z-10">
+              {destinations
+                .filter((d) =>
+                  d.toLowerCase().includes(destination.toLowerCase())
                 )
-                .map((st, i) => (
+                .map((d) => (
                   <li
-                    key={st.code}
-                    onClick={() => {
-                      setDestination(st);
-                      dispatch(addDestination(st));
-                      setDestinationInput(`${st.station_name} (${st.code})`);
-                      setDestinationActive(false);
-                      dateInputRef.current.focus();
-                    }}
-                    className={`px-3 py-2 cursor-pointer transition ${
-                      highlightIndex === i
-                        ? "bg-indigo-100 text-indigo-700"
-                        : "hover:bg-gray-100"
-                    }`}
+                    key={d}
+                    className="px-3 py-1 hover:bg-yellow-200 cursor-pointer"
+                    onClick={() => handleSelectDestination(d)}
                   >
-                    {st.station_name} ({st.code})
+                    {d}
                   </li>
                 ))}
             </ul>
           )}
         </div>
 
-        {/* Date */}
-        <div className="mb-6">
-          <label className="block mb-2 text-sm font-semibold text-gray-700">
-            Travel Date
-          </label>
-          <input
-            type="date"
-            disabled
-            ref={dateInputRef}
-            value={date}
-            min={todayStr}
-            max={tomorrowStr}
-            onChange={(e) => {
-              setDate(e.target.value);
-              dispatch(addJourneyDate(date));
-            }}
-            className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition text-gray-800"
-          />
-        </div>
+        <input
+          type="date"
+          value={today}
+          disabled
+          className="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-sm text-gray-400 cursor-not-allowed"
+        />
 
-        {/* Error Popover */}
-        {error && (
-          <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-red-500 text-white text-xs px-4 py-2 rounded-lg shadow-md">
-            {error}
-          </div>
-        )}
-
-        {/* Search Button */}
-        <motion.button
+        <button
           onClick={handleSearch}
-          className="w-full rounded-2xl bg-gradient-to-r from-indigo-500 to-blue-500 text-white py-3 px-6 font-semibold shadow-md hover:shadow-lg hover:from-indigo-600 hover:to-blue-600 transition transform hover:-translate-y-0.5"
+          disabled={
+            !sources.includes(source) || !destinations.includes(destination)
+          }
+          className={`w-full py-3 rounded-lg text-white font-semibold shadow-md transition
+            ${
+              sources.includes(source) && destinations.includes(destination)
+                ? "bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
+                : "bg-gray-500 cursor-not-allowed"
+            }`}
         >
-          Search Trains
-        </motion.button>
-        {/* Go Back at the bottom */}
-        <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={() => {
-            navigate(-1);
-          }}
-          className="mt-4 w-full py-3 px-4 rounded-xl text-white font-bold shadow-md bg-gray-500 hover:bg-gray-600 transition-colors duration-200 text-base"
+          Search
+        </button>
+
+        <button
+          onClick={goBack}
+          className="w-full py-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white font-medium mt-2"
         >
-          Go Back
-        </motion.button>
+          Back
+        </button>
+      </div>
+
+      {/* Train Results */}
+      <div className="space-y-2">
+        {filteredTrains.length === 0 && (
+          <p className="text-gray-300 text-sm">No trains found.</p>
+        )}
+        {filteredTrains.map((train) => (
+          <div key={train.number} className="bg-white/10 p-3 rounded-lg">
+            <p className="font-semibold">
+              {train.number} - {train.name}
+            </p>
+            <p className="text-sm text-gray-300">
+              {train.source} → {train.destination}
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   );
-}
+};
+
+export default TrainDetails;
