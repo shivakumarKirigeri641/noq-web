@@ -45,10 +45,9 @@ export default function TrainDetails() {
       navigate("/");
     } else {
       const fetchstations = async () => {
-        const result = await axios.get(
-          SERVER + "/noq/noqunreservedticket/stations",
-          { withCredentials: true }
-        );
+        const result = await axios.get(SERVER + "/unreserved-ticket/stations", {
+          withCredentials: true,
+        });
         console.log(result?.data?.data);
         dispatch(addStationsList(result?.data?.data));
       };
@@ -85,19 +84,19 @@ export default function TrainDetails() {
   const handleKeyDown = (e, type) => {
     const inputValue = type === "source" ? sourceInput : destinationInput;
 
-    const suggestions = stations.filter(
+    const suggestions = stations?.filter(
       (st) =>
-        (st.name.toLowerCase().includes(inputValue.toLowerCase()) ||
+        (st.station_name.toLowerCase().includes(inputValue.toLowerCase()) ||
           st.code.toLowerCase().includes(inputValue.toLowerCase())) &&
         (type === "source"
-          ? st._id !== destination?._id
-          : st._id !== source?._id)
+          ? st.code !== destination?.code
+          : st.code !== source?.code)
     );
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setHighlightIndex((prev) =>
-        prev < suggestions.length - 1 ? prev + 1 : prev
+        prev < suggestions?.length - 1 ? prev + 1 : prev
       );
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
@@ -108,7 +107,7 @@ export default function TrainDetails() {
         const selected = suggestions[highlightIndex];
         if (type === "source") {
           setSource(selected);
-          setSourceInput(`${selected.name} (${selected.code})`);
+          setSourceInput(`${selected.station_name} (${selected.code})`);
           dispatch(addSource(selected));
           setSourceActive(false);
           setHighlightIndex(-1);
@@ -116,7 +115,7 @@ export default function TrainDetails() {
         } else {
           setDestination(selected);
           dispatch(addDestination(selected));
-          setDestinationInput(`${selected.name} (${selected.code})`);
+          setDestinationInput(`${selected.station_name} (${selected.code})`);
           setDestinationActive(false);
           setHighlightIndex(-1);
           dateInputRef.current.focus();
@@ -172,23 +171,23 @@ export default function TrainDetails() {
           {sourceActive && (
             <ul className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto z-10">
               {stations
-                .filter(
+                ?.filter(
                   (st) =>
-                    (st.name
+                    (st.station_name
                       .toLowerCase()
                       .includes(sourceInput.toLowerCase()) ||
                       st.code
                         .toLowerCase()
                         .includes(sourceInput.toLowerCase())) &&
-                    st._id !== destination?._id
+                    st.code !== destination?.code
                 )
                 .map((st, i) => (
                   <li
-                    key={st._id}
+                    key={st.code}
                     onClick={() => {
                       setSource(st);
                       dispatch(addSource(st));
-                      setSourceInput(`${st.name} (${st.code})`);
+                      setSourceInput(`${st.station_name} (${st.code})`);
                       setSourceActive(false);
                       destinationInputRef.current.focus();
                     }}
@@ -198,7 +197,7 @@ export default function TrainDetails() {
                         : "hover:bg-gray-100"
                     }`}
                   >
-                    {st.name} ({st.code})
+                    {st.station_name} ({st.code})
                   </li>
                 ))}
             </ul>
@@ -233,21 +232,21 @@ export default function TrainDetails() {
               {stations
                 .filter(
                   (st) =>
-                    (st.name
+                    (st.station_name
                       .toLowerCase()
                       .includes(destinationInput.toLowerCase()) ||
                       st.code
                         .toLowerCase()
                         .includes(destinationInput.toLowerCase())) &&
-                    st._id !== source?._id
+                    st.code !== source?.code
                 )
                 .map((st, i) => (
                   <li
-                    key={st._id}
+                    key={st.code}
                     onClick={() => {
                       setDestination(st);
                       dispatch(addDestination(st));
-                      setDestinationInput(`${st.name} (${st.code})`);
+                      setDestinationInput(`${st.station_name} (${st.code})`);
                       setDestinationActive(false);
                       dateInputRef.current.focus();
                     }}
@@ -257,7 +256,7 @@ export default function TrainDetails() {
                         : "hover:bg-gray-100"
                     }`}
                   >
-                    {st.name} ({st.code})
+                    {st.station_name} ({st.code})
                   </li>
                 ))}
             </ul>
@@ -271,6 +270,7 @@ export default function TrainDetails() {
           </label>
           <input
             type="date"
+            disabled
             ref={dateInputRef}
             value={date}
             min={todayStr}

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { SERVER } from "../utils/constants";
 import { useNavigate } from "react-router";
@@ -8,14 +8,15 @@ import { useSelector } from "react-redux";
 const LoginOptions = () => {
   const navigate = useNavigate();
   const login = useSelector((store) => store.login);
+  const [mobile_number, setmobile_number] = useState("9886122415");
   useEffect(() => {
     if (!login) {
       navigate("/");
     } else {
       const fetchlogin = async () => {
         const result = await axios.post(
-          SERVER + "/noq/noqunreservedticket/login",
-          {},
+          SERVER + "/unreserved-ticket/verifyotp",
+          { mobile_number: mobile_number, otp: "1234" },
           { withCredentials: true }
         );
         console.log(result?.data);
@@ -62,7 +63,7 @@ const LoginOptions = () => {
                 navigate("/downloadticket");
               }}
             >
-              Download unreserved ticket
+              Booking history
             </button>
           </div>
         </div>
