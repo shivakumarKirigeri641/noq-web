@@ -1,10 +1,13 @@
 import React, { useRef } from "react";
-import { useNavigate } from "react-router"; // ✅ import navigation hook
+import { useLoaderData, useLocation, useNavigate } from "react-router"; // ✅ import navigation hook
 import jsPDF from "jspdf";
 import { toPng } from "html-to-image";
 import QRCode from "react-qr-code";
 
 export default function ConfirmTicket() {
+  const location = useLocation();
+  const { bookingDetails } = location.state || {};
+  console.log(bookingDetails);
   const ticketRef = useRef();
   const navigate = useNavigate(); // ✅ navigation
 

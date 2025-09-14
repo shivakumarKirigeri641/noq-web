@@ -9,6 +9,7 @@ const selectedStationsAndDateSlice = createSlice({
   },
   reducers: {
     addSource: (state, action) => {
+      console.log("calling:" + action.payload);
       state.selectedsource = action.payload;
     },
     addDestination: (state, action) => {

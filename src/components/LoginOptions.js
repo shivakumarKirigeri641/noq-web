@@ -1,72 +1,140 @@
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import React, { useState } from "react";
+import { addlogin } from "../store/slices/loginSlice";
 import { SERVER } from "../utils/constants";
-import { useNavigate } from "react-router";
+import { Form, Input, Button, Typography, Card } from "antd";
+import { motion } from "framer-motion";
+import "antd/dist/reset.css"; // modern antd reset
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router";
+
+const { Title, Text } = Typography;
 
 const LoginOptions = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const login = useSelector((store) => store.login);
-  const [mobile_number, setmobile_number] = useState("9886122415");
-  useEffect(() => {
-    if (!login) {
-      navigate("/");
-    } else {
-      const fetchlogin = async () => {
-        const result = await axios.post(
-          SERVER + "/unreserved-ticket/verifyotp",
-          { mobile_number: mobile_number, otp: "1234" },
-          { withCredentials: true }
-        );
-        console.log(result?.data);
-      };
-      fetchlogin();
-    }
-  }, []);
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const [otpSent, setOtpSent] = useState(false);
+  const hardcodedMobile = "9876543210"; // ✅ Hardcoded mobile
+  const hardcodedOtp = "1234"; // ✅ Hardcoded OTP
+
+  const handleSendOtp = (values) => {
+    // ✅ send OTP API
+    values.mobile = "9886122415";
+    values.otp = "1234";
+    console.log("Send OTP to:", values.mobile);
+    setOtpSent(true);
+  };
+
+  const handleVerifyOtp = async (values) => {
+    const result = await axios.post(
+      SERVER + "/unreserved-ticket/verifyotp",
+      {
+        mobile_number: "9886122415",
+        otp: "1234",
+      },
+      { withCredentials: true }
+    );
+    dispatch;
+    console.log(result?.data);
+    dispatch(addlogin(result?.data));
     navigate("/traindetails");
   };
+
   return (
-    <div className="relative flex items-center justify-center min-h-screen bg-gray-100 overflow-hidden">
-      {/* Background logo */}
-      <img
-        src={require("../images/logo.png")}
-        alt="Background Logo"
-        className="absolute inset-0 w-full h-full object-contain opacity-10 pointer-events-none"
-      />
+    <div
+      className="min-h-screen flex items-center justify-center bg-cover bg-center relative"
+      style={{
+        backgroundImage:
+          "url('https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=1600&q=80')",
+      }}
+    >
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black/50"></div>
 
-      {/* Welcome Card */}
       <motion.div
-        //initial={{ opacity: 0, y: 30 }}
-        //animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="z-10 w-full max-w-sm p-4"
+        transition={{ duration: 0.6 }}
+        className="relative w-full max-w-sm"
       >
-        <div className="bg-white rounded-2xl shadow-lg p-6 text-center">
-          <h2 className="text-2xl font-bold mb-2">Welcome to NoQ</h2>
-          <p className="text-gray-600 mb-6">No more in the queue</p>
+        <Card
+          className="rounded-2xl shadow-2xl"
+          style={{ backgroundColor: "rgba(255,255,255,0.95)" }}
+        >
+          <Title level={3} className="text-center font-bold">
+            Anti-queue Unreserved Ticketing
+          </Title>
+          <Text type="secondary" className="block text-center mb-6 italic">
+            — because queue is clueless.
+          </Text>
 
-          <div>
-            <button
-              type="submit"
-              className="w-full rounded-2xl bg-blue-500 text-white py-2 px-4 hover:bg-blue-600 transition"
-              onClick={handleSubmit}
-            >
-              Book Unreserved Ticket
-            </button>
-            <button
-              type="submit"
-              className="w-full rounded-2xl bg-blue-500 text-white py-2 px-4 hover:bg-blue-600 transition my-2"
-              onClick={() => {
-                navigate("/downloadticket");
-              }}
-            >
-              Booking history
-            </button>
-          </div>
-        </div>
+          {!otpSent ? (
+            <Form layout="vertical" onFinish={handleSendOtp}>
+              <Form.Item
+                name="mobile"
+                label="Mobile Number"
+                rules={
+                  [
+                    /*{
+                    required: true,
+                    message: "Please enter your mobile number",
+                  },
+                  {
+                    pattern: /^[6-9]\d{9}$/,
+                    message: "Enter a valid 10-digit Indian mobile number",
+                  },*/
+                  ]
+                }
+              >
+                <Input
+                  maxLength={10}
+                  placeholder="Enter 10-digit mobile"
+                  size="large"
+                />
+              </Form.Item>
+
+              <Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  block
+                  size="large"
+                  className="rounded-lg"
+                >
+                  Send OTP
+                </Button>
+              </Form.Item>
+            </Form>
+          ) : (
+            <Form layout="vertical" onFinish={handleVerifyOtp}>
+              <Form.Item
+                name="otp"
+                label="Enter OTP"
+                rules={
+                  [
+                    /*{ required: true, message: "Please enter the OTP" },
+                  {
+                    len: 6,
+                    message: "OTP must be 6 digits",
+                  },*/
+                  ]
+                }
+              >
+                <Input maxLength={4} placeholder="4-digit OTP" size="large" />
+              </Form.Item>
+
+              <Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  block
+                  size="large"
+                  className="rounded-lg bg-green-600 hover:bg-green-700"
+                >
+                  Verify OTP
+                </Button>
+              </Form.Item>
+            </Form>
+          )}
+        </Card>
       </motion.div>
     </div>
   );

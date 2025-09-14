@@ -1,484 +1,316 @@
-import axios from "axios";
+import React, { useState, useEffect } from "react";
 import { addavailableTrainsList } from "../store/slices/availableTrainsListSlice";
-import { source } from "framer-motion/client";
-import { useState, useRef, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { SERVER } from "../utils/constants";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router";
-import { SERVER, getArrivalDepartureTime } from "../utils/constants";
+import PaymentPopup from "./PaymentPopup";
+import clsx from "clsx";
+import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
 
+// Sample train data (replace with your actual data source)
 export default function PassengerDetails() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const srcSelected = useSelector(
-    (store) => store?.selectedStationsAndDate?.selectedsource
+  const srcselected = useSelector(
+    (store) => store.selectedStationsAndDate.selectedsource
   );
-  const destSelected = useSelector(
-    (store) => store?.selectedStationsAndDate?.selecteddestination
+  const destselected = useSelector(
+    (store) => store.selectedStationsAndDate.selecteddestination
   );
-  const journeyDate = useSelector(
-    (store) => store.selectedStationsAndDate.journeyDate
-  );
-  const parsedJourneyDate = journeyDate ? new Date(journeyDate) : null;
+  const sampleTrains = useSelector((store) => store.availableTrainsList);
   const [selectedTrain, setSelectedTrain] = useState(null);
-
-  const [bookingFor, setBookingFor] = useState("self");
-  const [travellerMobile, setTravellerMobile] = useState("");
-  const [bookerMobile, setBookerMobile] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState("");
-  const [verified, setVerified] = useState(false);
-
   const [adults, setAdults] = useState(1);
+  const [showPaymentPopup, setShowPaymentPopup] = useState(false);
   const [children, setChildren] = useState(0);
   const [isPH, setIsPH] = useState(false);
+  const [fare, setFare] = useState(0);
+  const [paymentCharges, setPaymentCharges] = useState(0);
+  const [convenienceFee, setConvenienceFee] = useState(0);
+  const [grandTotal, setGrandTotal] = useState(0);
 
-  const [errors, setErrors] = useState({});
-  const formRef = useRef(null);
+  // Update adults count when PH is toggled
+  useEffect(() => {
+    if (isPH) {
+      setAdults(1);
+    }
+  }, [isPH]);
 
-  const selectedFare = selectedTrain?.priceDetails[0].totalFare ?? 0;
-  const subtotal = selectedFare * adults + selectedFare * 0.5 * children;
-  const phDiscount = isPH ? Math.round(subtotal * 0.5) : 0;
-  const totalFare = Math.max(0, Math.round(subtotal - phDiscount));
+  useEffect(() => {
+    if (selectedTrain) {
+      // 1. Calculate base fare
+      const adultFare = selectedTrain?.base_fare * adults;
+      const childFare = selectedTrain?.base_fare * children;
+      let totalFare = adultFare + childFare;
 
-  // OTP Mock functions
-  const sendOtp = () => {
-    setOtpSent(true);
-    setVerified(false);
-    if ("others" === bookingFor && bookerMobile === travellerMobile) {
-      setOtpSent(false);
-      alert("Booker's mobile & Traveller's mobile cannot be same!");
+      // 2. Apply PH discount
+      if (isPH) {
+        totalFare *= 0.75;
+      }
+      setFare(totalFare);
+
+      // 3. Calculate additional charges based on total fare
+      const calculatedPaymentCharges = totalFare * 0.013;
+      const calculatedConvenienceFee = totalFare * 0.018;
+
+      setPaymentCharges(calculatedPaymentCharges);
+      setConvenienceFee(calculatedConvenienceFee);
+
+      // 4. Calculate grand total
+      const calculatedGrandTotal =
+        totalFare + calculatedPaymentCharges + calculatedConvenienceFee;
+      setGrandTotal(calculatedGrandTotal);
+      console.log(selectedTrain);
     } else {
-      alert("OTP sent! (For demo, use 1234)");
+      setFare(0);
+      setPaymentCharges(0);
+      setConvenienceFee(0);
+      setGrandTotal(0);
     }
-  };
-
-  const verifyOtp = () => {
-    if (otp === "1234") {
-      setVerified(true);
-      alert("OTP Verified ✅");
-    } else {
-      alert("Invalid OTP ❌ (Hint: 1234)");
-    }
-  };
-
-  const validate = () => {
-    const next = {};
-    if (!selectedTrain) next.train = "Please select a train.";
-
-    if (bookingFor === "self") {
-      if (!/^\d{10}$/.test(travellerMobile)) {
-        next.travellerMobile = "Enter valid 10-digit mobile number.";
-      }
-    } else {
-      if (!/^\d{10}$/.test(bookerMobile)) {
-        next.bookerMobile = "Enter valid 10-digit booker's mobile number.";
-      }
-      if (!/^\d{10}$/.test(travellerMobile)) {
-        next.travellerMobile =
-          "Enter valid 10-digit traveller's mobile number.";
-      }
-    }
-
-    if (!verified) {
-      next.otp = "OTP must be verified before proceeding.";
-    }
-
-    setErrors(next);
-    return Object.keys(next).length === 0;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!validate()) return;
-    navigate("/confirmticket");
-  };
-
-  // Outside click global validation
-  /*useEffect(() => {
-    const onDown = (e) => {
-      console.log("check");
-      if (formRef.current && !formRef.current.contains(e.target)) {
-        if (!selectedTrain || (!travellerMobile && !bookerMobile)) {
-          setErrors((prev) => ({
-            ...prev,
-            _global: "Please complete the required fields.",
-          }));
-        }
-      }
-    };
-    document.addEventListener("mousedown", onDown);
-    return () => document.removeEventListener("mousedown", onDown);
-  }, [selectedTrain, travellerMobile, bookerMobile]);*/
-  const login = useSelector((store) => store.login);
-  let trains_new = useSelector((store) => store.availableTrainsList);
-  console.log(trains_new);
+  }, [selectedTrain, adults, children, isPH]);
   useEffect(() => {
     try {
-      if (!login) {
-        navigate("/");
-      } else {
-        const fetchTrainList = async () => {
-          const result = await axios.post(
-            SERVER +
-              "/noq/noqunreservedticket/" +
-              srcSelected?.code +
-              "/" +
-              destSelected?.code +
-              "/" +
-              journeyDate,
-            {},
-            { withCredentials: true }
-          );
-          dispatch(addavailableTrainsList(result?.data?.result));
-        };
-        fetchTrainList();
-      }
-    } catch (err) {
-      console.log(err.message);
+      const fetchTrains = async () => {
+        const result = await axios.post(
+          SERVER + "/unreserved-ticket/trains-list",
+          { src: srcselected?.code, dest: destselected?.code },
+          { withCredentials: true }
+        );
+        console.log(result?.data?.data);
+        dispatch(addavailableTrainsList(result?.data?.data));
+      };
+      fetchTrains();
+    } catch (error) {
+      console.log(error.message);
     }
   }, []);
+  const isValid = selectedTrain !== null && adults >= 1;
+
+  const handleConfirmBooking = () => {
+    if (isValid) {
+      console.log("Booking confirmed!", {
+        selectedTrain,
+        adults,
+        children,
+        isPH,
+        fare,
+      });
+      setShowPaymentPopup(true);
+    }
+  };
+
+  const passengerCountOptions = Array.from({ length: 7 }, (_, i) => i);
+  const bookingDetails = {
+    selectedTrain,
+    adults,
+    children,
+    isPH,
+    fare: fare.toFixed(2),
+    paymentCharges: paymentCharges.toFixed(2),
+    convenienceFee: convenienceFee.toFixed(2),
+    grandTotal: grandTotal.toFixed(2),
+  };
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 flex items-center justify-center p-6">
-      <form
-        ref={formRef}
-        onSubmit={handleSubmit}
-        className="relative w-full max-w-3xl bg-white border border-slate-100 shadow-2xl rounded-3xl p-8"
-      >
-        {/* Back Button */}
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 flex items-center gap-2 
-                     bg-gradient-to-r from-indigo-100 to-blue-100 
-                     text-indigo-700 font-medium px-4 py-1 rounded-full 
-                     shadow-sm hover:shadow-md hover:from-indigo-200 hover:to-blue-200 
-                     transition-all duration-200 ease-in-out"
-        >
-          <span className="text-lg">←</span>
-          <span className="text-sm">Back</span>
-        </button>
-
-        {/* selected src dest */}
-        <div className="text-sm mt-8 italic">
-          <p>
-            You are going from{" "}
-            <span className="text-blue-600 font-semibold">
-              {srcSelected?.name}
-            </span>{" "}
-            to{" "}
-            <span className="text-blue-600 font-semibold">
-              {destSelected?.name}
-            </span>{" "}
-            on{" "}
-            <span className="text-blue-600 font-semibold">
-              {parsedJourneyDate?.toISOString()}
-            </span>
-          </p>
-        </div>
-        {/* Header */}
-        <header className="my-8 text-center">
-          <h1 className="text-2xl font-bold text-slate-800">
+    <>
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+        <div className="w-full max-w-md bg-white shadow-2xl rounded-2xl p-6 md:p-8">
+          <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
             Passenger Details
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Select a train, enter passenger details, and review fare before
-            booking.
-          </p>
-        </header>
-
-        {/* Available Trains */}
-        <section className="mb-8 relative">
-          <h2 className="text-sm font-semibold text-slate-700 mb-3 uppercase tracking-wide">
-            Available Trains
           </h2>
-          <div className="grid gap-3 text-sm">
-            {trains_new?.map((t) => (
-              <label
-                key={t?.traindDetails?.trainNumber}
-                className={`group flex items-center justify-between rounded-2xl border cursor-pointer transition
-                ${
-                  selectedTrain?.traindDetails?.trainNumber ===
-                  t?.traindDetails?.trainNumber
-                    ? "border-indigo-500 bg-indigo-50/70 p-1"
-                    : "border-slate-200 hover:bg-slate-50 p-1"
-                }`}
-              >
-                <div className="flex justify-between items-center ">
-                  <div className="">
-                    <div className="font-semibold text-slate-800 py-1p-2 rounded-2xl">
-                      {t?.traindDetails?.trainNumber} -{" "}
-                      {t?.traindDetails?.trainName}
-                    </div>
-                    <div className="text-xs font-semibold my-1 text-slate-500 p-2">
-                      Fare: ₹{t?.priceDetails[0].totalFare} | Arrival:{" "}
-                      {
-                        getArrivalDepartureTime(
-                          srcSelected?.code,
-                          t?.traindDetails?.stationList
-                        )?.arrivalTime
-                      }{" "}
-                      | departureTime:{" "}
-                      {
-                        getArrivalDepartureTime(
-                          srcSelected?.code,
-                          t?.traindDetails?.stationList
-                        )?.departureTime
-                      }
-                    </div>
-                  </div>
-                  <input
-                    type="radio"
-                    name="train"
-                    value={t?.traindDetails?.trainNumber}
-                    checked={
-                      selectedTrain?.traindDetails?.trainNumber ===
-                      t?.traindDetails?.trainNumber
-                    }
-                    onChange={() => setSelectedTrain(t)}
-                    className="h-5 w-5 accent-indigo-600"
-                  />
-                </div>
-              </label>
-            ))}
-            {errors.train && (
-              <div className="absolute -bottom-6 left-0 bg-red-500 text-white text-xs px-3 py-1 rounded">
-                {errors.train}
-              </div>
-            )}
-          </div>
-        </section>
 
-        {/* Booking For */}
-        <section className="mb-6">
-          <h2 className="text-sm font-semibold text-slate-700 mb-3 uppercase tracking-wide">
-            Booking For
-          </h2>
-          <div className="flex gap-4">
-            {["self", "others"].map((type) => (
-              <label
-                key={type}
-                className={`flex-1 rounded-xl border px-4 py-3 text-center cursor-pointer
-                ${
-                  bookingFor === type
-                    ? "border-indigo-500 bg-indigo-50"
-                    : "border-slate-300 hover:bg-slate-50"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="bookingFor"
-                  value={type}
-                  checked={bookingFor === type}
-                  onChange={() => {
-                    setBookingFor(type);
-                    setOtpSent(false);
-                    setVerified(false);
-                  }}
-                  className="hidden"
-                />
-                {type === "self" ? "Self" : "Others"}
-              </label>
-            ))}
-          </div>
-        </section>
-
-        {/* Mobile Inputs */}
-        <section className="mb-8 space-y-4">
-          {bookingFor === "others" && (
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Booker’s Mobile Number
-              </label>
-              <input
-                type="text"
-                value={bookerMobile}
-                onChange={(e) =>
-                  setBookerMobile(e.target.value.replace(/\D/g, ""))
-                }
-                placeholder="Enter 10-digit booker's number"
-                maxLength={10}
-                className={`w-full rounded-xl border px-4 py-3 text-slate-800 shadow-sm focus:outline-none
-                  ${
-                    /^\d{10}$/.test(bookerMobile)
-                      ? "border-green-500 bg-green-50"
-                      : "border-slate-300"
-                  }`}
-              />
-              {errors.bookerMobile && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.bookerMobile}
-                </p>
-              )}
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Traveller’s Mobile Number
+          {/* Train Select as Radio Buttons */}
+          <div className="mb-6">
+            <label className="block mb-2 font-semibold text-gray-700 text-sm md:text-base">
+              Select Train
             </label>
-            <input
-              type="text"
-              value={travellerMobile}
-              onChange={(e) => {
-                setTravellerMobile(e.target.value.replace(/\D/g, ""));
-              }}
-              placeholder="Enter 10-digit traveller's number"
-              maxLength={10}
-              className={`w-full rounded-xl border px-4 py-3 text-slate-800 shadow-sm focus:outline-none
-                ${
-                  /^\d{10}$/.test(travellerMobile)
-                    ? "border-green-500 bg-green-50"
-                    : "border-slate-300"
-                }`}
-            />
-            {errors.travellerMobile && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.travellerMobile}
-              </p>
-            )}
+            <div className="border border-gray-200 rounded-lg p-2 max-h-64 overflow-y-auto custom-scrollbar">
+              <AnimatePresence>
+                {sampleTrains?.map((train) => (
+                  <motion.label
+                    key={train?.train_number}
+                    className={clsx(
+                      "flex items-center p-3 cursor-pointer rounded-lg mb-1 last:mb-0 transition-all duration-200 ease-in-out",
+                      {
+                        "bg-blue-50 border border-blue-300":
+                          selectedTrain?.train_number === train?.train_number,
+                        "hover:bg-gray-100":
+                          selectedTrain?.train_number !== train?.train_number,
+                      }
+                    )}
+                    htmlFor={`train-${train?.train_number}`}
+                  >
+                    <input
+                      type="radio"
+                      id={`train-${train?.train_number}`}
+                      name="selectedTrain"
+                      value={train?.train_number}
+                      checked={
+                        selectedTrain?.train_number === train?.train_number
+                      }
+                      onChange={() => setSelectedTrain(train)}
+                      className="form-radio h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 mr-3 cursor-pointer"
+                    />
+                    <div className="w-full scroll-m-5">
+                      {/*<span className="font-medium text-gray-800 text-sm md:text-base">
+                      ({train.train_number}) {train.train_name}
+                    </span>
+                    <span className="block text-xs text-gray-500">
+                      Fare: Adults ₹{train.fare_per_adult} | Children ₹
+                      {train.fare_per_child}
+                    </span>*/}
+                      <div className="border border-gray-400 rounded-xl hover:bg-blue-300 text-sm">
+                        <div className="flex justify-around items-center text-gray-700 bg-blue-300 p-1 rounded-xl font-semibold">
+                          <p>({train?.train_number})</p>
+                          <p className="px-2">({train.train_name})</p>
+                        </div>
+                        <div className="flex justify-between items-center text-sm font-bold text-blue-600">
+                          <p>INR. {train?.base_fare}</p>
+                          <p className="px-2">{train?.km}km</p>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.label>
+                ))}
+              </AnimatePresence>
+            </div>
           </div>
 
-          {/* OTP Section */}
-          <div>
-            <button
-              type="button"
-              onClick={sendOtp}
-              disabled={
-                bookingFor === "self"
-                  ? travellerMobile.length !== 10
-                  : bookerMobile.length !== 10
-              }
-              className={`w-full py-2 rounded-lg mb-2 text-white font-medium 
-                ${
-                  (bookingFor === "self" && travellerMobile.length === 10) ||
-                  (bookingFor === "others" && bookerMobile.length === 10)
-                    ? "bg-blue-600 hover:bg-blue-700"
-                    : "bg-gray-400 cursor-not-allowed"
-                }`}
+          {/* Adults Dropdown */}
+          <div className="mb-4">
+            <label
+              htmlFor="adults"
+              className="block mb-1 font-medium text-sm text-gray-700"
             >
-              Get OTP
-            </button>
-
-            {otpSent && (
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                  placeholder="Enter OTP"
-                  maxLength={4}
-                  className="flex-1 rounded-xl border px-4 py-2 shadow-sm"
-                />
-                <button
-                  type="button"
-                  onClick={verifyOtp}
-                  className="px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700"
-                >
-                  Verify
-                </button>
-              </div>
-            )}
-            {errors.otp && (
-              <p className="text-red-500 text-sm mt-1">{errors.otp}</p>
-            )}
-          </div>
-        </section>
-
-        {/* Adults & Children */}
-        <section className="grid grid-cols-2 gap-6 mb-8">
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Adults
+              Adults (1–6)
             </label>
             <select
+              id="adults"
+              className={clsx(
+                "w-full border rounded-lg p-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all",
+                { "bg-gray-100 cursor-not-allowed": isPH }
+              )}
               value={adults}
               onChange={(e) => setAdults(Number(e.target.value))}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:outline-none"
+              disabled={isPH}
             >
-              {[1, 2, 3, 4, 5, 6].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
+              {isPH ? (
+                <option value={1}>1</option>
+              ) : (
+                passengerCountOptions.slice(1).map((num) => (
+                  <option key={num} value={num}>
+                    {num}
+                  </option>
+                ))
+              )}
             </select>
           </div>
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Children
+
+          {/* Children Dropdown */}
+          <div className="mb-4">
+            <label
+              htmlFor="children"
+              className="block mb-1 font-medium text-sm text-gray-700"
+            >
+              Children (0–6)
             </label>
             <select
+              id="children"
+              className="w-full border rounded-lg p-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               value={children}
               onChange={(e) => setChildren(Number(e.target.value))}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:outline-none"
             >
-              {[0, 1, 2, 3, 4, 5, 6].map((n) => (
-                <option key={n} value={n}>
-                  {n}
+              {passengerCountOptions.map((num) => (
+                <option key={num} value={num}>
+                  {num}
                 </option>
               ))}
             </select>
           </div>
-        </section>
 
-        {/* PH Checkbox */}
-        <section className="mb-6">
-          <label className="flex items-center gap-2">
+          {/* Physically Handicapped Toggle */}
+          <div className="flex items-center mb-2">
             <input
+              id="ph"
               type="checkbox"
               checked={isPH}
               onChange={(e) => setIsPH(e.target.checked)}
-              className="h-5 w-5 accent-indigo-600"
+              className="form-checkbox h-5 w-5 text-purple-600 rounded focus:ring-purple-500 cursor-pointer"
             />
-            <span className="text-slate-700 font-medium">
+            <label
+              htmlFor="ph"
+              className="ml-3 text-base font-medium text-gray-700 cursor-pointer"
+            >
               Physically Handicapped
-            </span>
-          </label>
-          {isPH && (
-            <p className="mt-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-              ⚠️ Carry valid proof to avail PH discount.
-            </p>
+            </label>
+          </div>
+
+          {/* PH Warning Message */}
+          <AnimatePresence>
+            {isPH && (
+              <motion.div
+                transition={{ duration: 0.3 }}
+                className="p-3 mb-4 rounded-xl bg-yellow-100 text-yellow-800 text-sm font-medium"
+              >
+                <p>
+                  <span className="font-bold">Important:</span> This is a
+                  separate ticket. Please carry ID proof.
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {grandTotal > 0 && (
+            <motion.div
+              className="p-4 rounded-xl text-gray-800 font-medium mb-6 shadow-md  bg-green-200"
+              transition={{ duration: 0.3 }}
+            >
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-sm">Total Fare:</span>
+                <span className="font-bold text-base">₹{fare.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center mb-1 text-xs text-gray-600">
+                <span>Payment Charges (1.3%):</span>
+                <span>+ ₹{paymentCharges.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center mb-2 text-xs text-gray-600">
+                <span>Convenience Fee (1.8%):</span>
+                <span>+ ₹{convenienceFee.toFixed(2)}</span>
+              </div>
+              <div className="h-px bg-gray-200 my-2"></div>
+              <div className="flex justify-between items-center text-lg font-bold border-t border-gray-500">
+                <span>Grand Total:</span>
+                <span>₹{grandTotal.toFixed(2)}</span>
+              </div>
+            </motion.div>
           )}
-        </section>
 
-        {/* Fare Summary */}
-        <section className="mb-8 p-5 bg-slate-50 rounded-2xl border border-slate-200">
-          <h2 className="text-sm font-semibold text-slate-700 mb-3 uppercase tracking-wide">
-            Fare Summary
-          </h2>
-          <ul className="text-slate-600 text-sm space-y-1">
-            <li>
-              Adults: {adults} × ₹{selectedFare} = ₹{selectedFare * adults}
-            </li>
-            <li>
-              Children: {children} × ₹{selectedFare * 0.5} = ₹
-              {selectedFare * 0.5 * children}
-            </li>
-            {isPH && <li>PH Discount: -₹{phDiscount}</li>}
-          </ul>
-          <div className="mt-3 text-lg font-bold text-slate-800">
-            Total: ₹{totalFare}
-          </div>
-        </section>
+          {/* Confirm Booking */}
+          <motion.button
+            disabled={!isValid}
+            onClick={handleConfirmBooking}
+            className={clsx(
+              `w-full py-3 px-4 rounded-xl font-bold shadow-lg text-lg transition-all duration-200`,
+              isValid
+                ? `bg-blue-600 hover:bg-blue-700 text-white`
+                : `bg-gray-400 cursor-not-allowed text-white`
+            )}
+          >
+            Confirm Booking
+          </motion.button>
 
-        {/* Submit */}
-        <button
-          type="submit"
-          className={
-            totalFare === 0
-              ? "w-full py-3 rounded-xl bg-gray-400 text-white font-semibold hover:bg-indigo-700 shadow-lg"
-              : "w-full py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 shadow-lg"
-          }
-          disabled={totalFare === 0 ? true : false}
-        >
-          Confirm & Pay
-        </button>
-
-        {errors._global && (
-          <div className="absolute top-2 right-2 bg-red-600 text-white text-xs px-3 py-2 rounded shadow">
-            {errors._global}
-          </div>
-        )}
-      </form>
-    </div>
+          {/* Go Back at the bottom */}
+          <motion.button
+            onClick={() => {
+              navigate(-1);
+            }}
+            className="mt-4 w-full py-3 px-4 rounded-xl text-white font-bold shadow-md bg-gray-500 hover:bg-gray-600 transition-colors duration-200 text-base"
+          >
+            Go Back
+          </motion.button>
+        </div>
+      </div>
+      {/* Payment Popup */}
+      {showPaymentPopup && <PaymentPopup bookingDetails={bookingDetails} />}
+    </>
   );
 }

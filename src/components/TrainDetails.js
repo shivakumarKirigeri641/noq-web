@@ -1,4 +1,5 @@
 import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
 import { SERVER } from "../utils/constants";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
@@ -72,13 +73,7 @@ export default function TrainDetails() {
       setError("Please select both source and destination");
       return;
     }
-    navigate("/passengerdetails", {
-      state: {
-        sourceCode: source.code,
-        destinationCode: destination.code,
-        date,
-      },
-    });
+    navigate("/passengerdetails");
   };
 
   const handleKeyDown = (e, type) => {
@@ -109,12 +104,14 @@ export default function TrainDetails() {
           setSource(selected);
           setSourceInput(`${selected.station_name} (${selected.code})`);
           dispatch(addSource(selected));
+          console.log(selected);
           setSourceActive(false);
           setHighlightIndex(-1);
           destinationInputRef.current.focus();
         } else {
           setDestination(selected);
           dispatch(addDestination(selected));
+          console.log(selected);
           setDestinationInput(`${selected.station_name} (${selected.code})`);
           setDestinationActive(false);
           setHighlightIndex(-1);
@@ -130,18 +127,6 @@ export default function TrainDetails() {
         ref={formRef}
         className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-8 relative border border-gray-100"
       >
-        {/* Back Button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 flex items-center gap-2 
-             bg-gradient-to-r from-indigo-100 to-blue-100 
-             text-indigo-700 font-medium px-4 py-2 rounded-full 
-             shadow-sm hover:shadow-md hover:from-indigo-200 hover:to-blue-200 
-             transition-all duration-200 ease-in-out"
-        >
-          ← Back
-        </button>
-
         <h2 className="text-2xl font-bold my-8 text-center text-gray-800">
           🚆 Journey details
         </h2>
@@ -291,12 +276,23 @@ export default function TrainDetails() {
         )}
 
         {/* Search Button */}
-        <button
+        <motion.button
           onClick={handleSearch}
           className="w-full rounded-2xl bg-gradient-to-r from-indigo-500 to-blue-500 text-white py-3 px-6 font-semibold shadow-md hover:shadow-lg hover:from-indigo-600 hover:to-blue-600 transition transform hover:-translate-y-0.5"
         >
           Search Trains
-        </button>
+        </motion.button>
+        {/* Go Back at the bottom */}
+        <motion.button
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={() => {
+            navigate(-1);
+          }}
+          className="mt-4 w-full py-3 px-4 rounded-xl text-white font-bold shadow-md bg-gray-500 hover:bg-gray-600 transition-colors duration-200 text-base"
+        >
+          Go Back
+        </motion.button>
       </div>
     </div>
   );

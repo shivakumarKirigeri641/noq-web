@@ -20,7 +20,9 @@
   "dependencies": {
     "@reduxjs/toolkit": "^2.8.2",
     "@tailwindcss/postcss": "^4.1.12",
+    "antd": "^5.27.3",
     "axios": "^1.11.0",
+    "clsx": "^2.1.1",
     "framer-motion": "^12.23.12",
     "html-to-image": "^1.11.13",
     "jspdf": "^3.0.2",
