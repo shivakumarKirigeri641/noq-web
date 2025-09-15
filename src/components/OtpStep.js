@@ -1,13 +1,28 @@
 import React from "react";
-
-const OtpStep = ({ otp, setOtp, onNext, onBack }) => {
-  const validateOtp = () => /^\d{6}$/.test(otp);
-  const handleNext = () => {
+import { addlogin } from "../store/slices/loginSlice";
+import { SERVER } from "../utils/constants";
+import { useDispatch } from "react-redux";
+import axios from "axios";
+const OtpStep = ({ otp, setOtp, onNext, onBack, onLogin }) => {
+  const dispatch = useDispatch();
+  const validateOtp = () => /^\d{4}$/.test(otp);
+  const handleNext = async () => {
     if (!validateOtp()) {
-      alert("Enter valid 6-digit OTP.");
+      alert("Enter valid 4-digit OTP.");
       return;
     }
-    onNext();
+    try {
+      const result = await axios.post(
+        SERVER + "/unreserved-ticket/verifyotp",
+        { mobile_number: "9886122415", otp: "1234" },
+        { withCredentials: true }
+      );
+      onNext();
+    } catch (err) {
+      console.log(err.message);
+      alert("Invalid otp! ERror:", err.message);
+      onLogin();
+    }
   };
 
   return (
@@ -19,7 +34,7 @@ const OtpStep = ({ otp, setOtp, onNext, onBack }) => {
         type="text"
         value={otp}
         onChange={(e) => setOtp(e.target.value)}
-        placeholder="Enter 6-digit OTP"
+        placeholder="Enter 4-digit OTP"
         className="w-full bg-white/20 border border-white/30 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 mb-4"
       />
       <button

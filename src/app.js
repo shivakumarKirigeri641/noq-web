@@ -2,7 +2,7 @@ import ReactDOM from "react-dom/client";
 import PassengerDetails from "./components/PassengerDetails";
 import appStore from "./store/appStore";
 import LoginOptions from "./components/LoginOptions";
-import TrainDetails from "./components/TrainDetails";
+import StationsDetails from "./components/StationsDetails";
 import ConfirmTicket from "./components/ConfirmTicket";
 import ReviewBooking from "./components/ReviewBooking";
 import DownloadTicket from "./components/DownloadTicket";
@@ -34,8 +34,8 @@ const appRouter = createBrowserRouter([
         element: <LoginOptions />,
       },
       {
-        path: "/traindetails",
-        element: <TrainDetails />,
+        path: "/stationsdetails",
+        element: <StationsDetails />,
       },
       {
         path: "/passengerdetails",

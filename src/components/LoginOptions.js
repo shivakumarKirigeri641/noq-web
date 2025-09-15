@@ -3,13 +3,20 @@ import LoginStep from "./LoginStep";
 import OtpStep from "./OtpStep";
 import LoggedInStep from "./LoggedInStep";
 import MenuStep from "./MenuStep";
-import TrainDetails from "./TrainDetails";
-
+import StationsDetails from "./StationsDetails";
+import PassengerDetails from "./PassengerDetails";
+import Payment from "./Payment";
+import ConfirmTicket from "./ConfirmTicket";
 const LoginOptions = () => {
   const [step, setStep] = useState(1); // 1=login, 2=otp, 3=loggedin, 4=menu, 5=train details
-  const [mobile, setMobile] = useState("");
-  const [otp, setOtp] = useState("");
-
+  const [mobile, setMobile] = useState("9886122415");
+  const [otp, setOtp] = useState("1234");
+  const [trainData, setTrainData] = useState({
+    source: "",
+    destination: "",
+    count: 0,
+  });
+  const [passengerDetails, setPassengerDetails] = useState(null);
   const handleLogout = () => {
     setStep(1);
     setMobile("");
@@ -34,6 +41,7 @@ const LoginOptions = () => {
                 setOtp={setOtp}
                 onNext={() => setStep(3)}
                 onBack={() => setStep(1)}
+                onLogin={() => setStep(1)}
               />
             )}
             {step === -1 && (
@@ -50,7 +58,20 @@ const LoginOptions = () => {
                 onExit={handleLogout}
               />
             )}
-            {step === 4 && <TrainDetails goBack={() => setStep(4)} />}
+            {step === 4 && (
+              <StationsDetails
+                goBack={() => setStep(3)}
+                onSearch={(detais) => {
+                  setTrainData({
+                    source: detais.source,
+                    destination: detais.destination,
+                    count: detais.count,
+                  });
+                }}
+                onNext={() => setStep(5)}
+                onLogin={() => setStep(1)}
+              />
+            )}
           </div>
         </div>
       </div>

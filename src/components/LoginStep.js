@@ -2,7 +2,7 @@ import React from "react";
 
 const LoginStep = ({ mobile, setMobile, onNext }) => {
   const validateMobile = () => /^[6-9]\d{9}$/.test(mobile);
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!validateMobile()) {
       alert("Enter valid 10-digit mobile number.");
       return;
