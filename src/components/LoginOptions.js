@@ -11,11 +11,7 @@ const LoginOptions = () => {
   const [step, setStep] = useState(1); // 1=login, 2=otp, 3=loggedin, 4=menu, 5=train details
   const [mobile, setMobile] = useState("9886122415");
   const [otp, setOtp] = useState("1234");
-  const [trainData, setTrainData] = useState({
-    source: "",
-    destination: "",
-    count: 0,
-  });
+  const [trainData, setTrainData] = useState({});
   const [passengerDetails, setPassengerDetails] = useState(null);
   const handleLogout = () => {
     setStep(1);
@@ -62,11 +58,10 @@ const LoginOptions = () => {
               <StationsDetails
                 goBack={() => setStep(3)}
                 onSearch={(detais) => {
-                  setTrainData({
-                    source: detais.source,
-                    destination: detais.destination,
-                    count: detais.count,
-                  });
+                  setTrainData(detais?.details);
+                  //console.log(detais?.details);
+                  console.log("traindata:", trainData);
+                  //setStep(5);
                 }}
                 onNext={() => setStep(5)}
                 onLogin={() => setStep(1)}

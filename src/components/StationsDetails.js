@@ -9,8 +9,10 @@ const StationsDetails = ({ goBack, onSearch, onNext, onLogin }) => {
   const stations = useSelector((store) => store.stationsList);
   const [loading, setLoading] = useState(true);
 
-  const [source, setSource] = useState("");
+  const [source, setSource] = useState(""); //source object, see how will you show, saveing is ok
+  const [sourceDetails, setsourceDetails] = useState({}); //source object, see how will you show, saveing is ok
   const [destination, setDestination] = useState("");
+  const [destinationDetails, setdestinationDetails] = useState({}); //source object, see how will you show, saveing is ok
   const [showSourceList, setShowSourceList] = useState(false);
   const [showDestList, setShowDestList] = useState(false);
 
@@ -58,14 +60,28 @@ const StationsDetails = ({ goBack, onSearch, onNext, onLogin }) => {
     try {
       const result = await axios.post(
         SERVER + "/unreserved-ticket/trains-list",
-        { src: source, dest: dest },
+        { src: sourceDetails?.code, dest: destinationDetails?.code },
         { withCredentials: true }
       );
+      console.log(result?.data?.data);
+      if (0 < result?.data?.data.length) {
+        //console.log("soruce details:", sourceDetails);
+        //console.log("dest details:", destinationDetails);
+        //console.log("count:", result?.data?.data.length);
+        onSearch({
+          details: {
+            source: sourceDetails,
+            destination: destinationDetails,
+            count,
+          },
+        });
+      } else {
+        alert("No trains found");
+      }
     } catch (err) {
-      alert("Error occured!");
+      console.log(err.message);
       onLogin();
     }
-    onSearch({ source, destination, count });
   };
 
   if (loading) {
@@ -112,6 +128,7 @@ const StationsDetails = ({ goBack, onSearch, onNext, onLogin }) => {
                   className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
                   onClick={() => {
                     setSource(`${s.station_name} (${s.code})`);
+                    setsourceDetails(s);
                     setShowSourceList(false);
                     destRef.current.querySelector("input")?.focus();
                   }}
@@ -152,6 +169,7 @@ const StationsDetails = ({ goBack, onSearch, onNext, onLogin }) => {
                   className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
                   onClick={() => {
                     setDestination(`${s.station_name} (${s.code})`);
+                    setdestinationDetails(s);
                     setShowDestList(false);
                   }}
                 >
