@@ -1,7 +1,9 @@
 import ReactDOM from "react-dom/client";
+import ConfirmedTicketDetails from "./components/ConfirmedTicketDetails";
 import appStore from "./store/appStore";
 import Login from "./components/Login";
 import StationsDetails from "./components/StationsDetails";
+import Payment from "./components/Payment";
 import PassengerDetails from "./components/PassengerDetails";
 import Error from "./components/Error";
 import { Provider } from "react-redux";
@@ -40,7 +42,16 @@ const appRouter = createBrowserRouter([
       {
         path: "/passenger-details",
         element: <PassengerDetails />,
-      } /*
+      },
+      {
+        path: "/confirm-ticket",
+        element: <ConfirmedTicketDetails />,
+      },
+      {
+        path: "/payment",
+        element: <Payment />,
+      },
+      /*
       {
         path: "/reviewbooking",
         element: <ReviewBooking />,
@@ -52,7 +63,8 @@ const appRouter = createBrowserRouter([
       {
         path: "/my-ticket-history",
         element: <TicketHistory />,
-      },*/,
+      },*/
+      ,
       ,
     ],
     errorElement: <Error />,

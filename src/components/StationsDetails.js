@@ -106,8 +106,6 @@ export default function StationDetails() {
 
   const handleSearch = async () => {
     try {
-      console.log(sourceDetails?.code);
-      console.log(destinationDetails?.code);
       const res = await axios.post(
         SERVER + "/unreserved-ticket/trains-list",
         {
@@ -117,15 +115,8 @@ export default function StationDetails() {
         { withCredentials: true }
       );
       console.log(res?.data?.data);
-      if (!res?.data?.data || res?.data?.data.length === 0) {
-        toast.error("No trains found 🚆", {
-          position: "top-center",
-          autoClose: 1000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: false,
-        });
+      if (res?.data?.data.length === 0) {
+        alert("No trains found 🚆");
       } else {
         const trains = res?.data?.data;
         navigate("/passenger-details", { state: { trains } });

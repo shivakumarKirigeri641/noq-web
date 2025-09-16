@@ -69,14 +69,19 @@ const PassengerDetails = () => {
 
   const handleConfirm = async () => {
     if (!validateBooking()) return;
-
-    setLoading(true);
+    //setLoading(true);
     try {
       // Replace this with actual booking API
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      toast.success("Booking confirmed ✅");
-      navigate("/"); // redirect to homepage or booking summary
+      //await new Promise((resolve) => setTimeout(resolve, 2000));
+      const total = fareBreakdown?.grossTotal;
+      navigate("/payment", {
+        state: {
+          bookingData: {
+            traindata: selectedTrain,
+            passengerdata: { total, adults, children, isPH },
+          },
+        },
+      }); // redirect to homepage or booking summary
     } catch (err) {
       toast.error("Booking failed ❌");
       console.error(err);
@@ -110,16 +115,21 @@ const PassengerDetails = () => {
                     onChange={() => setSelectedTrain(train)}
                     className="mr-2"
                   />
-                  <div>
+                  <div className="w-full">
                     <p className="font-semibold">
                       {train.train_name} ({train.train_number})
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-700">
                       {train.train_source} → {train.train_destination}
                     </p>
-                    <p className="text-xs text-gray-500">
-                      Fare: ₹{train.base_fare}
-                    </p>
+                    <div className="flex justify-between items-center py-1">
+                      <p className="text-xs text-gray-800 font-semibold py-1">
+                        Fare: ₹{train.base_fare}
+                      </p>
+                      <p className="text-xs text-gray-800 font-semibold py-1">
+                        Departure: ₹{train.departure}
+                      </p>
+                    </div>
                   </div>
                 </label>
               ))
