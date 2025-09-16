@@ -1,15 +1,12 @@
 import ReactDOM from "react-dom/client";
-import PassengerDetails from "./components/PassengerDetails";
 import appStore from "./store/appStore";
-import LoginOptions from "./components/LoginOptions";
+import Login from "./components/Login";
 import StationsDetails from "./components/StationsDetails";
-import ConfirmTicket from "./components/ConfirmTicket";
-import ReviewBooking from "./components/ReviewBooking";
-import DownloadTicket from "./components/DownloadTicket";
-import Home from "./components/Home";
+import PassengerDetails from "./components/PassengerDetails";
 import Error from "./components/Error";
 import { Provider } from "react-redux";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router";
+import Menu from "./components/Menu";
 const AppLayout = () => {
   return (
     <Provider store={appStore}>
@@ -26,21 +23,24 @@ const appRouter = createBrowserRouter([
     children: [
       {
         path: "/",
-        //element: <Home />,
-        element: <LoginOptions />,
+        element: <Login />,
       },
       {
-        path: "/loginoptions",
-        element: <LoginOptions />,
+        path: "/login",
+        element: <Login />,
       },
       {
-        path: "/stationsdetails",
+        path: "/menu",
+        element: <Menu />,
+      },
+      {
+        path: "/station-details",
         element: <StationsDetails />,
       },
       {
-        path: "/passengerdetails",
+        path: "/passenger-details",
         element: <PassengerDetails />,
-      },
+      } /*
       {
         path: "/reviewbooking",
         element: <ReviewBooking />,
@@ -50,9 +50,10 @@ const appRouter = createBrowserRouter([
         element: <ConfirmTicket />,
       },
       {
-        path: "/downloadticket",
-        element: <DownloadTicket />,
-      },
+        path: "/my-ticket-history",
+        element: <TicketHistory />,
+      },*/,
+      ,
     ],
     errorElement: <Error />,
   },

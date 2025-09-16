@@ -4,7 +4,7 @@
   "description": "UI for NoQ for digital unreserved ticketing system",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",    
+    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "parcel src/index.html"
   },
   "repository": {
@@ -24,16 +24,17 @@
     "antd": "^5.27.3",
     "axios": "^1.11.0",
     "clsx": "^2.1.1",
-    "framer-motion": "^12.23.12",
     "html-to-image": "^1.11.13",
     "jspdf": "^3.0.2",
     "parcel": "^2.13.3",
     "qrcode": "^1.5.4",
     "react": "^19.1.1",
+    "react-awesome-reveal": "^4.3.1",
     "react-dom": "^19.1.1",
     "react-qr-code": "^2.0.18",
     "react-redux": "^9.2.0",
     "react-router": "^7.8.2",
+    "react-toastify": "^11.0.5",
     "tailwindcss": "^4.1.12"
   },
   "devDependencies": {

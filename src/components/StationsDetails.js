@@ -1,209 +1,279 @@
 import React, { useState, useEffect, useRef } from "react";
+import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
-import { SERVER } from "../utils/constants";
-import { addStationsList } from "../store/slices/stationsListSlice";
 import { useDispatch, useSelector } from "react-redux";
+import { SERVER } from "../utils/constants";
+import { useNavigate } from "react-router";
+import Layout from "./Layout";
 
-const StationsDetails = ({ goBack, onSearch, onNext, onLogin }) => {
+export default function StationDetails() {
   const dispatch = useDispatch();
-  const stations = useSelector((store) => store.stationsList);
-  const [loading, setLoading] = useState(true);
-
-  const [source, setSource] = useState(""); //source object, see how will you show, saveing is ok
-  const [sourceDetails, setsourceDetails] = useState({}); //source object, see how will you show, saveing is ok
+  const navigate = useNavigate();
+  let masterstations = useSelector((store) => store.stationsList);
+  const [stations, setStations] = useState(
+    !masterstations ? [] : masterstations
+  );
+  const [source, setSource] = useState("");
+  const [sourceDetails, setSourceDetails] = useState({});
   const [destination, setDestination] = useState("");
-  const [destinationDetails, setdestinationDetails] = useState({}); //source object, see how will you show, saveing is ok
+  const [destinationDetails, setdestinationDetails] = useState({});
   const [showSourceList, setShowSourceList] = useState(false);
   const [showDestList, setShowDestList] = useState(false);
+  const [highlightIndex, setHighlightIndex] = useState(-1);
 
-  const sourceRef = useRef();
-  const destRef = useRef();
+  // ✅ define refs here
+  const sourceRef = useRef(null);
+  const destRef = useRef(null);
+
+  const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
-    const fetchstations = async () => {
+    const fetchStations = async () => {
       try {
-        const result = await axios.get(SERVER + "/unreserved-ticket/stations", {
+        const res = await axios.get(SERVER + "/unreserved-ticket/stations", {
           withCredentials: true,
         });
-        console.log(result?.data?.data);
-        dispatch(addStationsList(result?.data?.data));
+        setStations(res?.data?.data || []);
       } catch (err) {
-        console.log("ERror:", err.message);
-      } finally {
-        setLoading(false);
+        console.error("Error fetching stations:", err);
       }
     };
-    fetchstations();
-  }, []);
+    fetchStations();
 
-  // Click outside to close suggestions
-  useEffect(() => {
-    const handler = (e) => {
-      if (sourceRef.current && !sourceRef.current.contains(e.target)) {
+    const handleClickOutside = (e) => {
+      if (
+        sourceRef.current &&
+        !sourceRef.current.contains(e.target) &&
+        destRef.current &&
+        !destRef.current.contains(e.target)
+      ) {
         setShowSourceList(false);
-      }
-      if (destRef.current && !destRef.current.contains(e.target)) {
         setShowDestList(false);
+        setHighlightIndex(-1);
       }
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSearch = async () => {
-    if (!source || !destination) {
-      alert("Please select valid Source and Destination");
-      return;
-    }
-    //see if train present?
-    let count = 0;
-    try {
-      const result = await axios.post(
-        SERVER + "/unreserved-ticket/trains-list",
-        { src: sourceDetails?.code, dest: destinationDetails?.code },
-        { withCredentials: true }
-      );
-      console.log(result?.data?.data);
-      if (0 < result?.data?.data.length) {
-        //console.log("soruce details:", sourceDetails);
-        //console.log("dest details:", destinationDetails);
-        //console.log("count:", result?.data?.data.length);
-        onSearch({
-          details: {
-            source: sourceDetails,
-            destination: destinationDetails,
-            count,
-          },
-        });
-      } else {
-        alert("No trains found");
-      }
-    } catch (err) {
-      console.log(err.message);
-      onLogin();
+  const filteredStations = (query) =>
+    stations?.filter(
+      (s) =>
+        s.station_name.toLowerCase().includes(query.toLowerCase()) ||
+        s.code.toLowerCase().includes(query.toLowerCase())
+    );
+
+  const handleSelectSource = (station) => {
+    setSource(`${station.station_name} (${station.code})`);
+    setSourceDetails(station);
+    setShowSourceList(false);
+    setHighlightIndex(-1);
+    destRef.current.querySelector("input").focus();
+  };
+
+  const handleSelectDest = (station) => {
+    setDestination(`${station.station_name} (${station.code})`);
+    setdestinationDetails(station);
+    setShowDestList(false);
+    setHighlightIndex(-1);
+  };
+
+  const handleKeyDown = (e, type) => {
+    const list = filteredStations(type === "source" ? source : destination);
+    if (!list.length) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightIndex((prev) => (prev < list.length - 1 ? prev + 1 : 0));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightIndex((prev) => (prev > 0 ? prev - 1 : list.length - 1));
+    } else if ((e.key === "Enter" || e.key === "Tab") && highlightIndex >= 0) {
+      e.preventDefault();
+      const station = list[highlightIndex];
+      type === "source"
+        ? handleSelectSource(station)
+        : handleSelectDest(station);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-        <div className="bg-white/10 backdrop-blur-md px-6 py-4 rounded-xl shadow-lg text-center">
-          <div className="animate-spin h-10 w-10 border-4 border-blue-400 border-t-transparent rounded-full mx-auto mb-3"></div>
-          <p className="text-sm text-gray-200">Loading stations...</p>
-        </div>
-      </div>
-    );
-  }
+  const isValid =
+    source &&
+    destination &&
+    source !== destination &&
+    stations?.some((s) => source.includes(s.code)) &&
+    stations?.some((s) => destination.includes(s.code));
 
+  const handleSearch = async () => {
+    try {
+      console.log(sourceDetails?.code);
+      console.log(destinationDetails?.code);
+      const res = await axios.post(
+        SERVER + "/unreserved-ticket/trains-list",
+        {
+          src: sourceDetails?.code,
+          dest: destinationDetails?.code,
+        },
+        { withCredentials: true }
+      );
+      console.log(res?.data?.data);
+      if (!res?.data?.data || res?.data?.data.length === 0) {
+        toast.error("No trains found 🚆", {
+          position: "top-center",
+          autoClose: 1000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: false,
+        });
+      } else {
+        const trains = res?.data?.data;
+        navigate("/passenger-details", { state: { trains } });
+      }
+    } catch (err) {
+      toast.error("Error fetching trains", {
+        position: "top-center",
+      });
+      console.error(err);
+    }
+  };
   return (
-    <div className="backdrop-blur-md bg-white/10 rounded-2xl shadow-xl p-6">
-      <h2 className="text-xl font-bold text-center text-purple-300 mb-6">
-        Station Selection
-      </h2>
-
-      {/* Source */}
-      <div className="relative mb-4" ref={sourceRef}>
-        <input
-          type="text"
-          value={source}
-          onFocus={() => setShowSourceList(true)}
-          onChange={(e) => {
-            setSource(e.target.value);
-            setShowSourceList(true);
+    <Layout>
+      <div className="relative flex flex-col justify-center items-center h-screen w-screen">
+        {/* Background */}
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1606122101045-78e0b57a6f57?auto=format&fit=crop&w=1600&q=80')",
           }}
-          placeholder="Enter Source Station"
-          className="w-full bg-white/20 border border-white/30 rounded-lg px-4 py-3 text-sm"
         />
-        {showSourceList && (
-          <ul className="absolute top-full left-0 w-full bg-white text-black rounded-lg shadow-md max-h-40 overflow-y-auto z-10">
-            {stations
-              ?.filter(
-                (s) =>
-                  s.station_name.toLowerCase().includes(source.toLowerCase()) ||
-                  s.code.toLowerCase().includes(source.toLowerCase())
-              )
-              .map((s) => (
-                <li
-                  key={s.code}
-                  className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
-                  onClick={() => {
-                    setSource(`${s.station_name} (${s.code})`);
-                    setsourceDetails(s);
-                    setShowSourceList(false);
-                    destRef.current.querySelector("input")?.focus();
-                  }}
-                >
-                  {s.station_name} ({s.code})
-                </li>
-              ))}
-          </ul>
-        )}
-      </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-900/70 to-orange-700/70" />
 
-      {/* Destination */}
-      <div className="relative mb-4" ref={destRef}>
-        <input
-          type="text"
-          value={destination}
-          onFocus={() => setShowDestList(true)}
-          onChange={(e) => {
-            setDestination(e.target.value);
-            setShowDestList(true);
-          }}
-          placeholder="Enter Destination Station"
-          className="w-full bg-white/20 border border-white/30 rounded-lg px-4 py-3 text-sm"
-        />
-        {showDestList && (
-          <ul className="absolute top-full left-0 w-full bg-white text-black rounded-lg shadow-md max-h-40 overflow-y-auto z-10">
-            {stations
-              ?.filter(
-                (s) =>
-                  s.station_name
-                    .toLowerCase()
-                    .includes(destination.toLowerCase()) ||
-                  s.code.toLowerCase().includes(destination.toLowerCase())
-              )
-              .map((s) => (
-                <li
-                  key={s.code}
-                  className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
-                  onClick={() => {
-                    setDestination(`${s.station_name} (${s.code})`);
-                    setdestinationDetails(s);
-                    setShowDestList(false);
-                  }}
-                >
-                  {s.station_name} ({s.code})
-                </li>
-              ))}
-          </ul>
-        )}
-      </div>
+        {/* Card */}
+        <div className="relative w-[360px] bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-6">
+          <h1 className="text-xl font-bold text-center mb-4 text-gray-800">
+            Station Details
+          </h1>
 
-      {/* Date (today, disabled) */}
-      <input
-        type="date"
-        value={new Date().toISOString().split("T")[0]}
-        disabled
-        className="w-full bg-white/20 border border-white/30 rounded-lg px-4 py-3 text-sm mb-4 text-gray-400"
-      />
+          {/* Source Field */}
+          <div className="mb-4 relative" ref={sourceRef}>
+            <input
+              type="text"
+              value={source}
+              onChange={(e) => {
+                setSource(e.target.value);
+                setShowSourceList(true);
+                setHighlightIndex(0); // highlight first item on typing
+              }}
+              onFocus={() => {
+                setSource(""); // clear field on focus
+                setShowSourceList(true);
+                setHighlightIndex(0); // highlight first suggestion
+              }}
+              onKeyDown={(e) => handleKeyDown(e, "source")}
+              placeholder="Enter Source Station"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+            {showSourceList && (
+              <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-48 overflow-y-auto shadow-lg">
+                {filteredStations(source).map((station, idx) => (
+                  <li
+                    key={station.code}
+                    className={`px-4 py-2 cursor-pointer text-sm ${
+                      idx === highlightIndex
+                        ? "bg-blue-200"
+                        : "hover:bg-blue-100"
+                    }`}
+                    onClick={() => handleSelectSource(station)}
+                  >
+                    <div className="font-medium text-gray-800">
+                      {station.station_name} ({station.code})
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {station.zone} · {station.address}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
-      <div className="flex gap-2">
-        <button
-          onClick={goBack}
-          className="flex-1 bg-gray-600 hover:bg-gray-700 py-3 rounded-lg"
-        >
-          Back
-        </button>
-        <button
-          onClick={handleSearch}
-          className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 py-3 rounded-lg"
-        >
-          Search
-        </button>
+          {/* Destination Field */}
+          <div className="mb-4 relative" ref={destRef}>
+            <input
+              type="text"
+              value={destination}
+              onChange={(e) => {
+                setDestination(e.target.value);
+                setShowDestList(true);
+                setHighlightIndex(0); // highlight first item on typing
+              }}
+              onFocus={() => {
+                setDestination(""); // clear field on focus
+                setShowDestList(true);
+                setHighlightIndex(0); // highlight first suggestion
+              }}
+              onKeyDown={(e) => handleKeyDown(e, "dest")}
+              placeholder="Enter Destination Station"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+            {showDestList && (
+              <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-48 overflow-y-auto shadow-lg">
+                {filteredStations(destination).map((station, idx) => (
+                  <li
+                    key={station.code}
+                    className={`px-4 py-2 cursor-pointer text-sm ${
+                      idx === highlightIndex
+                        ? "bg-blue-200"
+                        : "hover:bg-blue-100"
+                    }`}
+                    onClick={() => handleSelectDest(station)}
+                  >
+                    <div className="font-medium text-gray-800">
+                      {station.station_name} ({station.code})
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {station.zone} · {station.address}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Date Field */}
+          <div className="mb-4">
+            <input
+              type="date"
+              value={today}
+              disabled
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-gray-100 text-gray-600 cursor-not-allowed"
+            />
+          </div>
+
+          {/* Search Button */}
+          <button
+            disabled={!isValid}
+            className={`w-full py-3 rounded-lg text-white font-medium transition ${
+              isValid
+                ? "bg-blue-600 hover:bg-blue-700"
+                : "bg-gray-400 cursor-not-allowed"
+            }`}
+            onClick={() => {
+              handleSearch();
+            }}
+          >
+            Search Trains
+          </button>
+        </div>
+
+        {/* Footer */}
+        <footer className="absolute bottom-3 text-center text-white text-xs">
+          © {new Date().getFullYear()} ServePe App Solutions. All rights
+          reserved.
+        </footer>
       </div>
-    </div>
+    </Layout>
   );
-};
-
-export default StationsDetails;
+}
