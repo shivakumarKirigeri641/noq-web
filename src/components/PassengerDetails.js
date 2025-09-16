@@ -18,28 +18,31 @@ const PassengerDetails = () => {
   const [loading, setLoading] = useState(false);
 
   // Fare calculation
-  const grossTotal = useMemo(() => {
-    console.log("grosstotla");
-    if (!selectedTrain) return 0;
+  // Fare breakdown calculation
+  const fareBreakdown = useMemo(() => {
+    if (!selectedTrain) return null;
 
     const baseFare = selectedTrain.base_fare || 0;
-    console.log(baseFare);
-    // Adults → full fare
-    let totalFare = adults * baseFare;
 
-    // Children → 50% fare
-    totalFare += children * (baseFare * 0.5);
+    let adultFare = adults * baseFare;
+    let childrenFare = children * (baseFare * 0.5);
 
-    // PH concession (40% off total fare)
-    if (isPH) {
-      totalFare = totalFare * 0.6;
-    }
+    let totalFare = adultFare + childrenFare;
 
-    // Add charges
+    if (isPH) totalFare = totalFare * 0.6;
+
     const paymentCharges = totalFare * 0.018;
     const convenienceFee = totalFare * 0.013;
+    const grossTotal = totalFare + paymentCharges + convenienceFee;
 
-    return (totalFare + paymentCharges + convenienceFee).toFixed(2);
+    return {
+      adultFare,
+      childrenFare,
+      totalFare,
+      paymentCharges,
+      convenienceFee,
+      grossTotal,
+    };
   }, [adults, children, isPH, selectedTrain]);
 
   // Validation before booking
@@ -179,12 +182,33 @@ const PassengerDetails = () => {
             )}
           </div>
 
-          {/* Fare */}
-          <div className="mb-4">
-            <p className="text-sm font-semibold">
-              Gross Total: <span className="text-blue-600">₹{grossTotal}</span>
-            </p>
-          </div>
+          {/* Fare Breakdown */}
+          {fareBreakdown && (
+            <div className="mb-4 border rounded-lg p-3 bg-gray-50 text-sm">
+              <div className="flex justify-between items-center">
+                <p>Base Fare (Adults): </p>
+                <p>₹{fareBreakdown.adultFare.toFixed(2)}</p>
+              </div>
+              <div className="flex justify-between items-center">
+                <p>Base Fare (Children): </p>
+                <p>₹{fareBreakdown.childrenFare.toFixed(2)}</p>
+              </div>
+              <div className="flex justify-between items-center">
+                <p>Payment Charges (1.8%): </p>
+                <p>₹{fareBreakdown.paymentCharges.toFixed(2)}</p>
+              </div>
+              <div className="flex justify-between items-center">
+                <p>Convenience Fee (1.3%): </p>
+                <p>₹{fareBreakdown.convenienceFee.toFixed(2)}</p>
+              </div>
+              <div className="font-semibold mt-2 bg-green-300 p-1">
+                <div className="flex justify-between items-center">
+                  <p>Gross Total: </p>
+                  <p>₹{fareBreakdown.grossTotal.toFixed(2)}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Buttons */}
           <div className="flex justify-between">
