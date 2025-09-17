@@ -16,7 +16,7 @@
   "bugs": {
     "url": "https://github.com/shivakumarKirigeri641/noq-web/issues"
   },
-  "homepage": "https://github.com/shivakumarKirigeri641/noq-web#readme",
+  "homepage": ".",
   "dependencies": {
     "@react-spring/web": "^10.0.2",
     "@reduxjs/toolkit": "^2.8.2",
