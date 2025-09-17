@@ -1,14 +1,14 @@
 import ReactDOM from "react-dom/client";
-import PassengerDetails from "./components/PassengerDetails";
+import ConfirmedTicketDetails from "./components/ConfirmedTicketDetails";
 import appStore from "./store/appStore";
-import LoginOptions from "./components/LoginOptions";
-import TrainDetails from "./components/TrainDetails";
-import ConfirmTicket from "./components/ConfirmTicket";
-import ReviewBooking from "./components/ReviewBooking";
-import DownloadTicket from "./components/DownloadTicket";
-import Home from "./components/Home";
+import Login from "./components/Login";
+import StationsDetails from "./components/StationsDetails";
+import Payment from "./components/Payment";
+import PassengerDetails from "./components/PassengerDetails";
+import Error from "./components/Error";
 import { Provider } from "react-redux";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router";
+import Menu from "./components/Menu";
 const AppLayout = () => {
   return (
     <Provider store={appStore}>
@@ -25,20 +25,33 @@ const appRouter = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <Home />,
+        element: <Login />,
       },
       {
-        path: "/loginoptions",
-        element: <LoginOptions />,
+        path: "/login",
+        element: <Login />,
       },
       {
-        path: "/traindetails",
-        element: <TrainDetails />,
+        path: "/menu",
+        element: <Menu />,
       },
       {
-        path: "/passengerdetails",
+        path: "/station-details",
+        element: <StationsDetails />,
+      },
+      {
+        path: "/passenger-details",
         element: <PassengerDetails />,
       },
+      {
+        path: "/confirm-ticket",
+        element: <ConfirmedTicketDetails />,
+      },
+      {
+        path: "/payment",
+        element: <Payment />,
+      },
+      /*
       {
         path: "/reviewbooking",
         element: <ReviewBooking />,
@@ -48,9 +61,11 @@ const appRouter = createBrowserRouter([
         element: <ConfirmTicket />,
       },
       {
-        path: "/downloadticket",
-        element: <DownloadTicket />,
-      },
+        path: "/my-ticket-history",
+        element: <TicketHistory />,
+      },*/
+      ,
+      ,
     ],
     errorElement: <Error />,
   },
