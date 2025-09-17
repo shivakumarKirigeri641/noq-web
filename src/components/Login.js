@@ -4,7 +4,6 @@ import { SERVER } from "../utils/constants";
 import { useNavigate } from "react-router";
 import axios from "axios";
 import { Slide, Fade } from "react-awesome-reveal";
-
 export default function Login() {
   const [mobile, setMobile] = useState("9886122415");
   const [otpSent, setOtpSent] = useState(false);
