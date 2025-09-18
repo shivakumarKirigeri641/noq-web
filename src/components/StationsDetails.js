@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Wallet, LogOut } from "lucide-react"; // icons
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
@@ -27,6 +28,13 @@ export default function StationDetails() {
 
   const today = new Date().toISOString().split("T")[0];
 
+  const handleWallet = () => {
+    //navigate("/wallet-recharge");
+  };
+
+  const handleExit = () => {
+    //navigate("/"); // or close app if mobile
+  };
   useEffect(() => {
     const fetchStations = async () => {
       try {
@@ -140,7 +148,23 @@ export default function StationDetails() {
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-blue-900/70 to-orange-700/70" />
-
+        {/* Top-right icons */}
+        <div className="absolute top-4 right-4 flex space-x-4">
+          <button
+            onClick={handleWallet}
+            className="p-2 bg-white/90 rounded-full shadow hover:bg-white transition"
+            title="Wallet"
+          >
+            <Wallet className="w-5 h-5 text-orange-600" />
+          </button>
+          <button
+            onClick={handleExit}
+            className="p-2 bg-white/90 rounded-full shadow hover:bg-white transition"
+            title="Logout"
+          >
+            <LogOut className="w-5 h-5 text-red-600" />
+          </button>
+        </div>
         {/* Card */}
         <div className="relative w-[360px] bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-6">
           <h1 className="text-xl font-bold text-center mb-4 text-gray-800">

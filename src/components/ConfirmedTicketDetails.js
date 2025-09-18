@@ -5,8 +5,6 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { QRCodeSVG } from "qrcode.react";
 
-import { QRCodeCanvas } from "qrcode.react";
-
 const ConfirmedTicketDetails = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,16 +34,68 @@ const ConfirmedTicketDetails = () => {
   const handleDownloadPDF = async () => {
     if (!ticketRef.current) return;
 
-    const canvas = await html2canvas(ticketRef.current, { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
+    const doc = new jsPDF();
+    let y = 20;
 
-    const pdf = new jsPDF("p", "mm", "a4");
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth() - 20;
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    doc.setFontSize(16);
+    doc.text("Confirmed Ticket", 20, y);
+    y += 15;
 
-    pdf.addImage(imgData, "PNG", 10, 10, pdfWidth, pdfHeight);
-    pdf.save(`Ticket_${ticket?.ticket_details?.pnr}.pdf`);
+    doc.setFontSize(12);
+    doc.text(`PNR: ${ticket.ticket_details.pnr}`, 20, y);
+    y += 10;
+    doc.text(
+      `Train: ${ticket.train_details.train_name} (${ticket.train_details.train_number})`,
+      20,
+      y
+    );
+    y += 10;
+    doc.text(`From: ${ticket.train_details.source}`, 20, y);
+    y += 10;
+    doc.text(`To: ${ticket.train_details.destination}`, 20, y);
+    y += 10;
+    doc.text(
+      `Date: ${
+        ticket.ticket_details.ticket_confirmation_datetime.split("T")[0]
+      }`,
+      20,
+      y
+    );
+    y += 10;
+
+    doc.text(`Fare: ₹${ticket.pay_details.total_fare}`, 20, y);
+    y += 10;
+    doc.text(`Payment Type: ${ticket.pay_details.paytype}`, 20, y);
+    y += 10;
+
+    doc.text(`Booking Details:`, 20, y);
+    y += 8;
+    doc.text(`  Adults: ${ticket.booking_details.adults}`, 25, y);
+    y += 8;
+    doc.text(`  Children: ${ticket.booking_details.children}`, 25, y);
+    y += 8;
+    doc.text(
+      `  Physically Handicapped: ${
+        ticket.booking_details.physically_handicapped ? "Yes" : "No"
+      }`,
+      25,
+      y
+    );
+    y += 10;
+
+    // ✅ Generate QR Code for TT verification
+    const ticketURL = `http://localhost:8888/unreserved-ticket/tt-data/verify-ticket/:${ticket.ticket_details.pnr}`;
+    /*const qrDataUrl = await QRCode.toDataURL(ticketURL);
+    doc.addImage(qrDataUrl, "PNG", 150, 40, 40, 40);*/
+
+    // ✅ Footer comments
+    doc.setFontSize(10);
+    y = 270;
+    ticket.comments?.forEach((comment, index) => {
+      doc.text(comment, 20, y + index * 6);
+    });
+
+    doc.save(`Ticket_${ticket.ticket_details.pnr}.pdf`);
   };
 
   if (loading) {

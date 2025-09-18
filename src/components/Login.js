@@ -21,19 +21,19 @@ export default function Login() {
     setError("");
 
     try {
-      const res = await axios.post(
+      /*const res = await axios.post(
         SERVER + "/unreserved-ticket/send-otp",
         {
           mobile_number: mobile,
         },
         { withCredentials: true }
-      );
-
-      if (res.data.success) {
+      );*/
+      setOtpSent(true);
+      /*if (res.data.success) {
         setOtpSent(true);
       } else {
         setError(res.data.message || "Failed to send OTP");
-      }
+      }*/
     } catch (err) {
       setError("Error sending OTP. Try again. Error:", err.message);
       console.log(err.message);

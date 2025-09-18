@@ -1,7 +1,7 @@
-import React from "react";
 import { useNavigate } from "react-router";
 import { Slide } from "react-awesome-reveal";
 import Layout from "./Layout";
+import { Wallet, LogOut } from "lucide-react"; // icons
 
 export default function Menu() {
   const navigate = useNavigate();
@@ -15,11 +15,11 @@ export default function Menu() {
   };
 
   const handleWallet = () => {
-    navigate("/wallet-recharge");
+    //navigate("/wallet-recharge");
   };
 
   const handleExit = () => {
-    navigate("/"); // or close app if mobile
+    //navigate("/"); // or close app if mobile
   };
 
   return (
@@ -34,6 +34,24 @@ export default function Menu() {
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-blue-900/70 to-orange-700/70" />
+
+        {/* Top-right icons */}
+        <div className="absolute top-4 right-4 flex space-x-4">
+          <button
+            onClick={handleWallet}
+            className="p-2 bg-white/90 rounded-full shadow hover:bg-white transition"
+            title="Wallet"
+          >
+            <Wallet className="w-5 h-5 text-orange-600" />
+          </button>
+          <button
+            onClick={handleExit}
+            className="p-2 bg-white/90 rounded-full shadow hover:bg-white transition"
+            title="Logout"
+          >
+            <LogOut className="w-5 h-5 text-red-600" />
+          </button>
+        </div>
 
         {/* Card */}
         <Slide triggerOnce>
