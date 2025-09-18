@@ -115,7 +115,7 @@ const PassengerDetails = () => {
                     onChange={() => setSelectedTrain(train)}
                     className="mr-2"
                   />
-                  <div className="w-full">
+                  <div className="w-full overflow-auto">
                     <p className="font-semibold">
                       {train.train_name} ({train.train_number})
                     </p>

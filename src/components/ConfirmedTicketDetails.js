@@ -4,8 +4,8 @@ import { toast } from "react-toastify";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { QRCodeSVG } from "qrcode.react";
-
-import { QRCodeCanvas } from "qrcode.react";
+// Named import
+import * as QRCode from "qrcode";
 
 const ConfirmedTicketDetails = () => {
   const navigate = useNavigate();
@@ -36,16 +36,99 @@ const ConfirmedTicketDetails = () => {
   const handleDownloadPDF = async () => {
     if (!ticketRef.current) return;
 
-    const canvas = await html2canvas(ticketRef.current, { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
+    const doc = new jsPDF("p", "mm", [180, 250]); // small A6-like card
 
-    const pdf = new jsPDF("p", "mm", "a4");
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth() - 20;
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    // Header
+    doc.setFillColor(29, 78, 216); // blue background
+    doc.rect(0, 0, 180, 30, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text(ticket.train_details.train_name, 90, 10, { align: "center" });
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text(`PNR: ${ticket.ticket_details.pnr}`, 90, 20, { align: "center" });
 
-    pdf.addImage(imgData, "PNG", 10, 10, pdfWidth, pdfHeight);
-    pdf.save(`Ticket_${ticket?.ticket_details?.pnr}.pdf`);
+    // Body
+    doc.setTextColor(0, 0, 0);
+    let y = 40;
+    doc.setFont("helvetica", "bold");
+    doc.text("Route", 10, y);
+    doc.setFont("helvetica", "normal");
+    doc.text(
+      `${ticket.train_details.source} → ${ticket.train_details.destination}`,
+      10,
+      y + 7
+    );
+
+    y += 20;
+    doc.setFont("helvetica", "bold");
+    doc.text("Date of Journey", 10, y);
+    doc.text("Total Fare", 120, y, { align: "left" });
+    doc.setFont("helvetica", "normal");
+    doc.text(
+      new Date(ticket.ticket_details.ticket_confirmation_datetime)
+        .toISOString()
+        .split("T")[0],
+      10,
+      y + 7
+    );
+    doc.text(`₹${ticket.pay_details.total_fare}`, 120, y + 7);
+
+    y += 20;
+    doc.setFont("helvetica", "bold");
+    doc.text("Scheduled departure", 10, y);
+    doc.setFont("helvetica", "normal");
+    const dep = ticket.ticket_details.scheduled_departure;
+    doc.text(
+      `${dep.hours.toString().padStart(2, "0")}:${
+        !dep?.minute ? "00" : dep?.minute
+      }`,
+      10,
+      y + 7
+    );
+
+    y += 15;
+    doc.setFont("helvetica", "bold");
+    doc.text("Passengers", 10, y);
+    doc.setFont("helvetica", "normal");
+    const b = ticket.booking_details;
+    doc.text(
+      `Adults: ${b.adults}, Children: ${b.children}, PH: ${
+        b.physically_handicapped ? "Yes" : "No"
+      }`,
+      10,
+      y + 7
+    );
+
+    y += 15;
+    doc.setFont("helvetica", "bold");
+    doc.text("Train Number", 10, y);
+    doc.setFont("helvetica", "normal");
+    doc.text(ticket.train_details.train_number, 10, y + 7);
+
+    // QR code
+    const ticketURL = `http://localhost:8888/unreserved-ticket/tt-data/verify-ticket/:${ticket.ticket_details.pnr}`;
+    try {
+      const qrDataUrl = await QRCode.toDataURL(ticketURL, {
+        width: 50,
+        margin: 1,
+      });
+      doc.addImage(qrDataUrl, "PNG", 130, 60, 40, 40);
+    } catch (err) {
+      console.error("QR code generation failed:", err);
+    }
+
+    // Comments at bottom
+    let footY = 200;
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(10);
+    ticket.comments.forEach((c) => {
+      doc.text(`* ${c}`, 10, footY);
+      footY += 5;
+    });
+
+    doc.save(`Ticket_${ticket.ticket_details.pnr}.pdf`);
   };
 
   if (loading) {
@@ -84,7 +167,8 @@ const ConfirmedTicketDetails = () => {
           <div className="border-b border-dotted pb-2">
             <p className="text-sm text-gray-500">Route</p>
             <p className="font-semibold">
-              {ticket?.train_details?.source} →{" "}
+              {ticket?.train_details?.source}{" "}
+              <span className="text-gray-700"> to </span>
               {ticket?.train_details?.destination}
             </p>
           </div>
@@ -106,6 +190,38 @@ const ConfirmedTicketDetails = () => {
               <p className="font-semibold text-blue-600">
                 ₹{ticket?.pay_details?.total_fare}
               </p>
+            </div>
+          </div>
+
+          {/* scheduled departure */}
+          <div className="border-b border-dotted pb-2 flex justify-between items-center">
+            <div>
+              <p className="text-sm text-gray-500">Scheduled departure</p>
+              <div className="flex">
+                <p>{ticket?.ticket_details?.scheduled_departure?.hours}</p>
+                <span>:</span>
+                <p>
+                  {!ticket?.ticket_details?.scheduled_departure?.minutes
+                    ? "00"
+                    : ticket?.ticket_details?.scheduled_departure?.minutes}
+                </p>
+              </div>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Ticket status</p>
+              <div className="flex">
+                <p>
+                  {ticket?.ticket_details?.pnr_status === 0 ? (
+                    <span className="py-0.5 text-green-600 font-bold">
+                      ACTIVE
+                    </span>
+                  ) : (
+                    <span className="py-0.5 text-red-600 font-bold">
+                      EXPIRED
+                    </span>
+                  )}
+                </p>
+              </div>
             </div>
           </div>
 
@@ -134,7 +250,7 @@ const ConfirmedTicketDetails = () => {
         {/* Buttons */}
         <div className="flex justify-between p-4">
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/menu")}
             className="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg"
           >
             Home
