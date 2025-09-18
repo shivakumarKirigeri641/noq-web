@@ -2,6 +2,7 @@ import ReactDOM from "react-dom/client";
 import ConfirmedTicketDetails from "./components/ConfirmedTicketDetails";
 import appStore from "./store/appStore";
 import Login from "./components/Login";
+import TicketHistory from "./components/TicketHistory";
 import StationsDetails from "./components/StationsDetails";
 import Payment from "./components/Payment";
 import PassengerDetails from "./components/PassengerDetails";
@@ -42,6 +43,10 @@ const appRouter = createBrowserRouter([
       {
         path: "/passenger-details",
         element: <PassengerDetails />,
+      },
+      {
+        path: "/ticket-history",
+        element: <TicketHistory />,
       },
       {
         path: "/confirm-ticket",

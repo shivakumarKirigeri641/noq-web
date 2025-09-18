@@ -81,9 +81,9 @@ const ConfirmedTicketDetails = () => {
     doc.setFont("helvetica", "normal");
     const dep = ticket.ticket_details.scheduled_departure;
     doc.text(
-      `${dep.hours.toString().padStart(2, "0")}:${dep.minutes
-        .toString()
-        .padStart(2, "0")}`,
+      `${dep.hours.toString().padStart(2, "0")}:${
+        !dep?.minute ? "00" : dep?.minute
+      }`,
       10,
       y + 7
     );
@@ -167,7 +167,8 @@ const ConfirmedTicketDetails = () => {
           <div className="border-b border-dotted pb-2">
             <p className="text-sm text-gray-500">Route</p>
             <p className="font-semibold">
-              {ticket?.train_details?.source} →{" "}
+              {ticket?.train_details?.source}{" "}
+              <span className="text-gray-700"> to </span>
               {ticket?.train_details?.destination}
             </p>
           </div>
@@ -206,7 +207,22 @@ const ConfirmedTicketDetails = () => {
                 </p>
               </div>
             </div>
-            <div className="text-right"></div>
+            <div>
+              <p className="text-sm text-gray-500">Ticket status</p>
+              <div className="flex">
+                <p>
+                  {ticket?.ticket_details?.pnr_status === 0 ? (
+                    <span className="py-0.5 text-green-600 font-bold">
+                      ACTIVE
+                    </span>
+                  ) : (
+                    <span className="py-0.5 text-red-600 font-bold">
+                      EXPIRED
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Passengers */}
@@ -234,7 +250,7 @@ const ConfirmedTicketDetails = () => {
         {/* Buttons */}
         <div className="flex justify-between p-4">
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/menu")}
             className="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg"
           >
             Home

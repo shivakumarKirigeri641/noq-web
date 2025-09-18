@@ -281,6 +281,15 @@ export default function StationDetails() {
           >
             Search Trains
           </button>
+          {/* Back Button */}
+          <div className="w-full flex justify-center mt-6">
+            <button
+              onClick={() => window.history.back()}
+              className="px-4 py-2 bg-red-600 hover:bg-gray-700 text-white rounded-lg w-full"
+            >
+              Back
+            </button>
+          </div>
         </div>
 
         {/* Footer */}
