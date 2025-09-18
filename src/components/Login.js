@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "./Layout";
-import { SERVER } from "../utils/constants";
 import { useNavigate } from "react-router";
 import axios from "axios";
 import { Slide, Fade } from "react-awesome-reveal";
@@ -21,19 +20,20 @@ export default function Login() {
     setError("");
 
     try {
-      /*const res = await axios.post(
-        SERVER + "/unreserved-ticket/send-otp",
+      console.log(process.env.REACT_APP_SERVER);
+      const res = await axios.post(
+        `${process.env.REACT_APP_SERVER}/unreserved-ticket/send-otp`,
         {
           mobile_number: mobile,
         },
         { withCredentials: true }
-      );*/
+      );
       setOtpSent(true);
-      /*if (res.data.success) {
+      if (res.data.success) {
         setOtpSent(true);
       } else {
         setError(res.data.message || "Failed to send OTP");
-      }*/
+      }
     } catch (err) {
       setError("Error sending OTP. Try again. Error:", err.message);
       console.log(err.message);
@@ -49,7 +49,8 @@ export default function Login() {
 
     try {
       const res = await axios.post(
-        SERVER + "/unreserved-ticket/verifyotp",
+        process.env.REACT_APP_process.env.REACT_APP_SERVER +
+          "/unreserved-ticket/verifyotp",
         {
           mobile_number: mobile,
           otp: otp,
@@ -68,7 +69,9 @@ export default function Login() {
       setLoading(false);
     }
   };
-
+  useEffect(() => {
+    console.log(process.env.REACT_APP_SERVER);
+  }, []);
   return (
     <Layout>
       <div className="relative flex flex-col justify-center items-center h-screen w-screen">

@@ -1,4 +1,3 @@
-export const SERVER = "http://localhost:8888";
 export const getArrivalDepartureTime = (sourceCode, stationlist) => {
   try {
     const temp = stationlist?.filter(
