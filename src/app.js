@@ -10,7 +10,7 @@ import Error from "./components/Error";
 import { Provider } from "react-redux";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router";
 import Menu from "./components/Menu";
-const AppLayout = () => {
+export function App() {
   return (
     <Provider store={appStore}>
       <div>
@@ -18,11 +18,11 @@ const AppLayout = () => {
       </div>
     </Provider>
   );
-};
+}
 const appRouter = createBrowserRouter([
   {
     path: "/",
-    element: <AppLayout />,
+    element: <App />,
     children: [
       {
         path: "/",
@@ -77,6 +77,6 @@ const appRouter = createBrowserRouter([
 ]);
 ReactDOM.createRoot(document.getElementById("root")).render(
   <RouterProvider router={appRouter}>
-    <AppLayout />
+    <App />
   </RouterProvider>
 );
