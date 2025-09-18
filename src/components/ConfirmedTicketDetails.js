@@ -4,6 +4,8 @@ import { toast } from "react-toastify";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { QRCodeSVG } from "qrcode.react";
+// Named import
+import * as QRCode from "qrcode";
 
 const ConfirmedTicketDetails = () => {
   const navigate = useNavigate();
@@ -52,6 +54,18 @@ const ConfirmedTicketDetails = () => {
     y += 10;
     doc.text(`From: ${ticket.train_details.source}`, 20, y);
     y += 10;
+    doc.text(
+      `Schedules deparutre: ${
+        ticket?.ticket_details.scheduled_departure?.hours
+      }:${
+        !ticket.ticket_details.scheduled_departure?.minutes
+          ? "00"
+          : ticket.ticket_details.scheduled_departure?.minutes
+      }`,
+      20,
+      y
+    );
+    y += 10;
     doc.text(`To: ${ticket.train_details.destination}`, 20, y);
     y += 10;
     doc.text(
@@ -82,11 +96,13 @@ const ConfirmedTicketDetails = () => {
       y
     );
     y += 10;
+    doc.text(`  Children: ${ticket.booking_details.children}`, 25, y);
+    y += 8;
 
     // ✅ Generate QR Code for TT verification
     const ticketURL = `http://localhost:8888/unreserved-ticket/tt-data/verify-ticket/:${ticket.ticket_details.pnr}`;
-    /*const qrDataUrl = await QRCode.toDataURL(ticketURL);
-    doc.addImage(qrDataUrl, "PNG", 150, 40, 40, 40);*/
+    const qrDataUrl = await QRCode.toDataURL(ticketURL);
+    doc.addImage(qrDataUrl, "PNG", 150, 40, 40, 40);
 
     // ✅ Footer comments
     doc.setFontSize(10);
