@@ -175,6 +175,23 @@ const ConfirmedTicketDetails = () => {
             </div>
           </div>
 
+          {/* scheduled departure */}
+          <div className="border-b border-dotted pb-2 flex justify-between items-center">
+            <div>
+              <p className="text-sm text-gray-500">Scheduled departure</p>
+              <div className="flex">
+                <p>{ticket?.ticket_details?.scheduled_departure?.hours}</p>
+                <span>:</span>
+                <p>
+                  {!ticket?.ticket_details?.scheduled_departure?.minutes
+                    ? "00"
+                    : ticket?.ticket_details?.scheduled_departure?.minutes}
+                </p>
+              </div>
+            </div>
+            <div className="text-right"></div>
+          </div>
+
           {/* Passengers */}
           <div className="border-b border-dotted pb-2">
             <p className="text-sm text-gray-500">Passengers</p>
