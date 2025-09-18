@@ -10,7 +10,7 @@ import Error from "./components/Error";
 import { Provider } from "react-redux";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router";
 import Menu from "./components/Menu";
-export function App() {
+export default function App() {
   return (
     <Provider store={appStore}>
       <div>
