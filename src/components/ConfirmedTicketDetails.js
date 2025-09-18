@@ -36,79 +36,96 @@ const ConfirmedTicketDetails = () => {
   const handleDownloadPDF = async () => {
     if (!ticketRef.current) return;
 
-    const doc = new jsPDF();
-    let y = 20;
+    const doc = new jsPDF("p", "mm", [180, 250]); // small A6-like card
 
-    doc.setFontSize(16);
-    doc.text("Confirmed Ticket", 20, y);
-    y += 15;
-
+    // Header
+    doc.setFillColor(29, 78, 216); // blue background
+    doc.rect(0, 0, 180, 30, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text(ticket.train_details.train_name, 90, 10, { align: "center" });
     doc.setFontSize(12);
-    doc.text(`PNR: ${ticket.ticket_details.pnr}`, 20, y);
-    y += 10;
-    doc.text(
-      `Train: ${ticket.train_details.train_name} (${ticket.train_details.train_number})`,
-      20,
-      y
-    );
-    y += 10;
-    doc.text(`From: ${ticket.train_details.source}`, 20, y);
-    y += 10;
-    doc.text(
-      `Schedules deparutre: ${
-        ticket?.ticket_details.scheduled_departure?.hours
-      }:${
-        !ticket.ticket_details.scheduled_departure?.minutes
-          ? "00"
-          : ticket.ticket_details.scheduled_departure?.minutes
-      }`,
-      20,
-      y
-    );
-    y += 10;
-    doc.text(`To: ${ticket.train_details.destination}`, 20, y);
-    y += 10;
-    doc.text(
-      `Date: ${
-        ticket.ticket_details.ticket_confirmation_datetime.split("T")[0]
-      }`,
-      20,
-      y
-    );
-    y += 10;
+    doc.setFont("helvetica", "normal");
+    doc.text(`PNR: ${ticket.ticket_details.pnr}`, 90, 20, { align: "center" });
 
-    doc.text(`Fare: ₹${ticket.pay_details.total_fare}`, 20, y);
-    y += 10;
-    doc.text(`Payment Type: ${ticket.pay_details.paytype}`, 20, y);
-    y += 10;
-
-    doc.text(`Booking Details:`, 20, y);
-    y += 8;
-    doc.text(`  Adults: ${ticket.booking_details.adults}`, 25, y);
-    y += 8;
-    doc.text(`  Children: ${ticket.booking_details.children}`, 25, y);
-    y += 8;
+    // Body
+    doc.setTextColor(0, 0, 0);
+    let y = 40;
+    doc.setFont("helvetica", "bold");
+    doc.text("Route", 10, y);
+    doc.setFont("helvetica", "normal");
     doc.text(
-      `  Physically Handicapped: ${
-        ticket.booking_details.physically_handicapped ? "Yes" : "No"
-      }`,
-      25,
-      y
+      `${ticket.train_details.source} → ${ticket.train_details.destination}`,
+      10,
+      y + 7
     );
-    y += 10;
-    doc.text(`  Children: ${ticket.booking_details.children}`, 25, y);
-    y += 8;
 
-    // ✅ Generate QR Code for TT verification
+    y += 20;
+    doc.setFont("helvetica", "bold");
+    doc.text("Date of Journey", 10, y);
+    doc.text("Total Fare", 120, y, { align: "left" });
+    doc.setFont("helvetica", "normal");
+    doc.text(
+      new Date(ticket.ticket_details.ticket_confirmation_datetime)
+        .toISOString()
+        .split("T")[0],
+      10,
+      y + 7
+    );
+    doc.text(`₹${ticket.pay_details.total_fare}`, 120, y + 7);
+
+    y += 20;
+    doc.setFont("helvetica", "bold");
+    doc.text("Scheduled departure", 10, y);
+    doc.setFont("helvetica", "normal");
+    const dep = ticket.ticket_details.scheduled_departure;
+    doc.text(
+      `${dep.hours.toString().padStart(2, "0")}:${dep.minutes
+        .toString()
+        .padStart(2, "0")}`,
+      10,
+      y + 7
+    );
+
+    y += 15;
+    doc.setFont("helvetica", "bold");
+    doc.text("Passengers", 10, y);
+    doc.setFont("helvetica", "normal");
+    const b = ticket.booking_details;
+    doc.text(
+      `Adults: ${b.adults}, Children: ${b.children}, PH: ${
+        b.physically_handicapped ? "Yes" : "No"
+      }`,
+      10,
+      y + 7
+    );
+
+    y += 15;
+    doc.setFont("helvetica", "bold");
+    doc.text("Train Number", 10, y);
+    doc.setFont("helvetica", "normal");
+    doc.text(ticket.train_details.train_number, 10, y + 7);
+
+    // QR code
     const ticketURL = `http://localhost:8888/unreserved-ticket/tt-data/verify-ticket/:${ticket.ticket_details.pnr}`;
-    const qrDataUrl = await QRCode.toDataURL(ticketURL);
-    doc.addImage(qrDataUrl, "PNG", 150, 40, 40, 40);
+    try {
+      const qrDataUrl = await QRCode.toDataURL(ticketURL, {
+        width: 50,
+        margin: 1,
+      });
+      doc.addImage(qrDataUrl, "PNG", 130, 60, 40, 40);
+    } catch (err) {
+      console.error("QR code generation failed:", err);
+    }
 
-    // ✅ Footer comments
+    // Comments at bottom
+    let footY = 200;
+    doc.setFont("helvetica", "italic");
     doc.setFontSize(10);
-    y = 270;
-    ticket.comments?.forEach((comment, index) => {
-      doc.text(comment, 20, y + index * 6);
+    ticket.comments.forEach((c) => {
+      doc.text(`* ${c}`, 10, footY);
+      footY += 5;
     });
 
     doc.save(`Ticket_${ticket.ticket_details.pnr}.pdf`);
