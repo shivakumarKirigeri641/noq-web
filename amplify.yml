@@ -3,14 +3,19 @@ frontend:
   phases:
     preBuild:
       commands:
-        - npm ci
+        - npm ci   # install deps using lock file
     build:
       commands:
-        - npm run build
+        - npm run build  # run your React build
   artifacts:
-    baseDirectory: build
+    baseDirectory: build  # React's output folder
     files:
       - '**/*'
   cache:
     paths:
       - node_modules/**/*
+  customHeaders:
+    - pattern: '**/*'
+      headers:
+        - key: Cache-Control
+          value: 'public, max-age=0, must-revalidate'
