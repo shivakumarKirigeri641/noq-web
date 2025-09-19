@@ -88,10 +88,10 @@ export default function Login() {
         {/* Login Card */}
         <div className="relative w-[360px] bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-6">
           <h1 className="text-xl font-bold text-center mb-2 text-gray-800">
-            Welcome to ServePe App Solutions
+            Welcome to Seat hidi
           </h1>
-          <p className="text-sm text-center text-gray-600 mb-6">
-            One stop for unreserved ticketing.
+          <p className="text-sm text-gray-600 mb-6 text-right">
+            - 'Kar'cheap mein tick'hit'.
           </p>
 
           {/* Show error */}
@@ -172,11 +172,14 @@ export default function Login() {
               </p>
             </div>
           )}
+          <p className="text-red-500 font-bold text-sm text-center py-2">
+            This is only demo app
+          </p>
         </div>
 
         {/* Footer */}
         <footer className="absolute bottom-3 text-center text-white text-xs">
-          © {new Date().getFullYear()} ServePe App Solutions. All rights
+          <p>© {new Date().getFullYear()} ServePe App Solutions. All rights</p>
           reserved.
         </footer>
       </div>
