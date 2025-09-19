@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { Slide } from "react-awesome-reveal";
 import Layout from "./Layout";
 import { Wallet, LogOut } from "lucide-react"; // icons

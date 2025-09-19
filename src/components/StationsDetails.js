@@ -3,7 +3,7 @@ import { Wallet, LogOut } from "lucide-react"; // icons
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import Layout from "./Layout";
 
 export default function StationDetails() {
