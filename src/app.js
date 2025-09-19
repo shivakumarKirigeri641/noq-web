@@ -8,7 +8,6 @@ function App() {
   return (
     <Provider store={appStore}>
       <div>
-        <h1>App Layout</h1>
         <Outlet /> {/* 👈 This should render Login/Menu/etc */}
       </div>
     </Provider>
