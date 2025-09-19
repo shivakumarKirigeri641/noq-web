@@ -11,3 +11,4 @@ export const getArrivalDepartureTime = (sourceCode, stationlist) => {
     console.log(err.message);
   }
 };
+export const SERVER = "/api";

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { SERVER } from "../utils/constants";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import jsPDF from "jspdf";
@@ -108,7 +109,7 @@ const ConfirmedTicketDetails = () => {
     doc.text(ticket.train_details.train_number, 10, y + 7);
 
     // QR code
-    const ticketURL = `${process.env.REACT_APP_SERVER}/unreserved-ticket/tt-data/verify-ticket/:${ticket.ticket_details.pnr}`;
+    const ticketURL = `${SERVER}/unreserved-ticket/tt-data/verify-ticket/:${ticket.ticket_details.pnr}`;
     try {
       const qrDataUrl = await QRCode.toDataURL(ticketURL, {
         width: 50,

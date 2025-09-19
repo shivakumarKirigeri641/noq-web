@@ -1,4 +1,5 @@
 import axios from "axios";
+import { SERVER } from "../utils/constants";
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -19,7 +20,7 @@ const Payment = () => {
       }
       try {
         const result = await axios.post(
-          process.env.REACT_APP_SERVER + "/unreserved-ticket/book-ticket",
+          SERVER + "/unreserved-ticket/book-ticket",
           {
             train_number: bookingData?.traindata?.train_number,
             adults: bookingData?.passengerdata?.adults,

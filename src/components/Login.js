@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Layout from "./Layout";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { SERVER } from "../utils/constants";
 import { Slide, Fade } from "react-awesome-reveal";
 export default function Login() {
   const [mobile, setMobile] = useState("");
@@ -20,9 +21,9 @@ export default function Login() {
     setError("");
 
     try {
-      console.log(process.env.REACT_APP_SERVER);
+      console.log(SERVER);
       const res = await axios.post(
-        `${process.env.REACT_APP_SERVER}/unreserved-ticket/send-otp`,
+        `${SERVER}/unreserved-ticket/send-otp`,
         {
           mobile_number: mobile,
         },
@@ -49,8 +50,7 @@ export default function Login() {
 
     try {
       const res = await axios.post(
-        process.env.REACT_APP_process.env.REACT_APP_SERVER +
-          "/unreserved-ticket/verifyotp",
+        process.env.REACT_APP_SERVER + "/unreserved-ticket/verifyotp",
         {
           mobile_number: mobile,
           otp: otp,
@@ -70,7 +70,7 @@ export default function Login() {
     }
   };
   useEffect(() => {
-    console.log(process.env.REACT_APP_SERVER);
+    console.log(SERVER);
   }, []);
   return (
     <Layout>

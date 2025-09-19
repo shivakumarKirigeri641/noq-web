@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { SERVER } from "../utils/constants";
 import { Wallet, LogOut } from "lucide-react"; // icons
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
@@ -37,12 +38,9 @@ export default function StationDetails() {
   useEffect(() => {
     const fetchStations = async () => {
       try {
-        const res = await axios.get(
-          process.env.REACT_APP_SERVER + "/unreserved-ticket/stations",
-          {
-            withCredentials: true,
-          }
-        );
+        const res = await axios.get(SERVER + "/unreserved-ticket/stations", {
+          withCredentials: true,
+        });
         setStations(res?.data?.data || []);
       } catch (err) {
         console.error("Error fetching stations:", err);
@@ -117,7 +115,7 @@ export default function StationDetails() {
   const handleSearch = async () => {
     try {
       const res = await axios.post(
-        process.env.REACT_APP_SERVER + "/unreserved-ticket/trains-list",
+        SERVER + "/unreserved-ticket/trains-list",
         {
           src: sourceDetails?.code,
           dest: destinationDetails?.code,

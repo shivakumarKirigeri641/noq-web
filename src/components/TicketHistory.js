@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { SERVER } from "../utils/constants";
 import "react-toastify/dist/ReactToastify.css";
 import { useSprings, animated } from "react-spring";
 import { Fade } from "react-awesome-reveal";
@@ -15,7 +16,7 @@ const TicketHistory = () => {
       setLoading(true);
       try {
         const res = await axios.get(
-          `${process.env.REACT_APP_SERVER}/unreserved-ticket/booking-history`,
+          `${SERVER}/unreserved-ticket/booking-history`,
           {
             withCredentials: true,
           }
