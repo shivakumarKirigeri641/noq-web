@@ -3,16 +3,14 @@ frontend:
   phases:
     preBuild:
       commands:
-        - cd src/noq-web
         - npm ci
     build:
       commands:
-        - cd src/noq-web
         - npm run build
   artifacts:
-    baseDirectory: src/noq-web/build   # ✅ React build output
+    baseDirectory: build
     files:
       - '**/*'
   cache:
     paths:
-      - src/noq-web/node_modules/**/*
+      - node_modules/**/*
