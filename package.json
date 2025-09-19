@@ -4,10 +4,7 @@
   "description": "UI for NoQ for digital unreserved ticketing system",
   "main": "index.js",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "parcel src/index.html"
   },
   "repository": {
     "type": "git",
@@ -36,7 +33,7 @@
     "react-awesome-reveal": "^4.3.1",
     "react-dom": "^19.1.1",
     "react-redux": "^9.2.0",
-    "react-router-dom": "^7.9.1",
+    "react-router": "^7.9.1",
     "react-scripts": "^5.0.1",
     "react-spring": "^10.0.1",
     "react-toastify": "^11.0.5",
