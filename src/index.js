@@ -1,7 +1,7 @@
 import "./index.css";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Login from "./components/Login";
 import Menu from "./components/Menu";
 import StationsDetails from "./components/StationsDetails";
