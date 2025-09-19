@@ -4,7 +4,9 @@
   "description": "UI for NoQ for digital unreserved ticketing system",
   "main": "index.js",
   "scripts": {
-    "start": "parcel src/index.html"
+    "dev":"parcel src/index.html",
+      "start": "react-scripts start",
+      "build": "react-scripts build"
   },
   "repository": {
     "type": "git",
