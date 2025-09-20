@@ -23,7 +23,7 @@ export default function Login() {
     try {
       console.log(SERVER);
       const res = await axios.post(
-        `${SERVER}/unreserved-ticket/send-otp`,
+        SERVER + "/unreserved-ticket/send-otp",
         {
           mobile_number: mobile,
         },
@@ -50,7 +50,7 @@ export default function Login() {
 
     try {
       const res = await axios.post(
-        process.env.REACT_APP_SERVER + "/unreserved-ticket/verifyotp",
+        SERVER + "/unreserved-ticket/verifyotp",
         {
           mobile_number: mobile,
           otp: otp,

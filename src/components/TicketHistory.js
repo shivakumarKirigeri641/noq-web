@@ -16,7 +16,7 @@ const TicketHistory = () => {
       setLoading(true);
       try {
         const res = await axios.get(
-          `${SERVER}/unreserved-ticket/booking-history`,
+          SERVER + "/unreserved-ticket/booking-history",
           {
             withCredentials: true,
           }

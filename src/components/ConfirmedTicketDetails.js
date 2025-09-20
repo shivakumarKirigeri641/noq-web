@@ -109,7 +109,10 @@ const ConfirmedTicketDetails = () => {
     doc.text(ticket.train_details.train_number, 10, y + 7);
 
     // QR code
-    const ticketURL = `${SERVER}/unreserved-ticket/tt-data/verify-ticket/:${ticket.ticket_details.pnr}`;
+    const ticketURL =
+      SERVER +
+      "/unreserved-ticket/tt-data/verify-ticket/:" +
+      ticket.ticket_details.pnr;
     try {
       const qrDataUrl = await QRCode.toDataURL(ticketURL, {
         width: 50,
