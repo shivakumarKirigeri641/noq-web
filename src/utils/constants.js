@@ -1,3 +1,4 @@
+export const SERVER = "/api";
 export const getArrivalDepartureTime = (sourceCode, stationlist) => {
   try {
     const temp = stationlist?.filter(
@@ -11,4 +12,3 @@ export const getArrivalDepartureTime = (sourceCode, stationlist) => {
     console.log(err.message);
   }
 };
-export const SERVER = "/api";
