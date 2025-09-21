@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Cookies from "js-cookie";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { SERVER } from "../utils/constants";
@@ -234,6 +235,7 @@ const TicketHistory = () => {
         <div className="flex justify-center mt-6">
           <button
             onClick={() => {
+              const token = Cookies.get("token");
               if (!token) {
                 alert("Session expired, please re-login!");
                 navigate("/"); // redirect to login
