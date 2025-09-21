@@ -233,6 +233,7 @@ const PassengerDetails = () => {
           <div className="flex justify-between">
             <button
               onClick={() => {
+                const token = Cookies.get("token");
                 if (!token) {
                   alert("Session expired, please re-login!");
                   navigate("/"); // redirect to login

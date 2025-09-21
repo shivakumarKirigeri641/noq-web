@@ -116,11 +116,10 @@ export default function StationDetails() {
   const handleSearch = async () => {
     try {
       const token = Cookies.get("token");
-      console.log("token:", token);
+      console.log("current token:", token);
       if (!token) {
         alert("Session expired, please re-login!");
         navigate("/"); // redirect to login
-        return;
       } else {
         const res = await axios.post(
           SERVER + "/unreserved-ticket/trains-list",
@@ -130,7 +129,7 @@ export default function StationDetails() {
           },
           { withCredentials: true }
         );
-        if (res?.data?.data.length === 0) {
+        if (res?.data?.data?.length === 0) {
           alert("No trains found 🚆");
         } else {
           const trains = res?.data?.data;
@@ -138,10 +137,8 @@ export default function StationDetails() {
         }
       }
     } catch (err) {
-      toast.error("Error fetching trains", {
-        position: "top-center",
-      });
-      console.error(err);
+      alert("Something went wrong!, please re-login!");
+      navigate("/"); // redirect to login
     }
   };
   return (
@@ -194,7 +191,7 @@ export default function StationDetails() {
                 setShowSourceList(true);
                 setHighlightIndex(0); // highlight first suggestion
               }}
-              onKeyDown={(e) => handleKeyDown(e, "source")}
+              //onKeyDown={(e) => handleKeyDown(e, "source")}
               placeholder="Enter Source Station"
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
@@ -237,7 +234,7 @@ export default function StationDetails() {
                 setShowDestList(true);
                 setHighlightIndex(0); // highlight first suggestion
               }}
-              onKeyDown={(e) => handleKeyDown(e, "dest")}
+              //onKeyDown={(e) => handleKeyDown(e, "dest")}
               placeholder="Enter Destination Station"
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
