@@ -43,18 +43,16 @@ export default function Menu() {
     const token = Cookies.get("token");
     if (!token) {
       alert("Session expired, please re-login!");
-      navigate("/"); // redirect to login
-      return;
     } else {
-      const res = await axios.post(
+      await axios.post(
         SERVER + "/unreserved-ticket/logout",
         {},
         {
           withCredentials: true,
         }
       );
-      navigate("/"); // redirect to login
     }
+    navigate("/"); // redirect to login
   };
 
   return (
@@ -80,7 +78,9 @@ export default function Menu() {
             <Wallet className="w-5 h-5 text-orange-600" />
           </button>
           <button
-            onClick={handleExit}
+            onClick={() => {
+              handleExit();
+            }}
             className="p-2 bg-white/90 rounded-full shadow hover:bg-white transition"
             title="Logout"
           >
@@ -120,7 +120,9 @@ export default function Menu() {
             </button>
 
             <button
-              onClick={handleExit}
+              onClick={() => {
+                handleExit();
+              }}
               className="w-full py-3 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium transition"
             >
               Exit
