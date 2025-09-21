@@ -3,6 +3,7 @@ import { SERVER } from "../utils/constants";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import jsPDF from "jspdf";
+import Cookies from "js-cookie";
 import html2canvas from "html2canvas";
 import { QRCodeSVG } from "qrcode.react";
 // Named import
@@ -254,7 +255,16 @@ const ConfirmedTicketDetails = () => {
         {/* Buttons */}
         <div className="flex justify-between p-4">
           <button
-            onClick={() => navigate("/menu")}
+            onClick={() => {
+              const token = Cookies.get("token");
+              if (!token) {
+                alert("Session expired, please re-login!");
+                navigate("/"); // redirect to login
+                return;
+              } else {
+                navigate("/menu");
+              }
+            }}
             className="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg"
           >
             Home

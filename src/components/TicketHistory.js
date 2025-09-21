@@ -233,7 +233,15 @@ const TicketHistory = () => {
         {/* Back Button */}
         <div className="flex justify-center mt-6">
           <button
-            onClick={() => window.history.back()}
+            onClick={() => {
+              if (!token) {
+                alert("Session expired, please re-login!");
+                navigate("/"); // redirect to login
+                return;
+              } else {
+                window.history.back();
+              }
+            }}
             className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg w-1/2"
           >
             Back

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import Cookies from "js-cookie";
 import { SERVER } from "../utils/constants";
 import { Wallet, LogOut } from "lucide-react"; // icons
 import { ToastContainer, toast } from "react-toastify";
@@ -114,20 +115,27 @@ export default function StationDetails() {
 
   const handleSearch = async () => {
     try {
-      const res = await axios.post(
-        SERVER + "/unreserved-ticket/trains-list",
-        {
-          src: sourceDetails?.code,
-          dest: destinationDetails?.code,
-        },
-        { withCredentials: true }
-      );
-      console.log(res?.data?.data);
-      if (res?.data?.data.length === 0) {
-        alert("No trains found 🚆");
+      const token = Cookies.get("token");
+      console.log("token:", token);
+      if (!token) {
+        alert("Session expired, please re-login!");
+        navigate("/"); // redirect to login
+        return;
       } else {
-        const trains = res?.data?.data;
-        navigate("/passenger-details", { state: { trains } });
+        const res = await axios.post(
+          SERVER + "/unreserved-ticket/trains-list",
+          {
+            src: sourceDetails?.code,
+            dest: destinationDetails?.code,
+          },
+          { withCredentials: true }
+        );
+        if (res?.data?.data.length === 0) {
+          alert("No trains found 🚆");
+        } else {
+          const trains = res?.data?.data;
+          navigate("/passenger-details", { state: { trains } });
+        }
       }
     } catch (err) {
       toast.error("Error fetching trains", {
@@ -284,7 +292,15 @@ export default function StationDetails() {
           {/* Back Button */}
           <div className="w-full flex justify-center mt-6">
             <button
-              onClick={() => window.history.back()}
+              onClick={() => {
+                if (!token) {
+                  alert("Session expired, please re-login!");
+                  navigate("/"); // redirect to login
+                  return;
+                } else {
+                  window.history.back();
+                }
+              }}
               className="px-4 py-2 bg-red-600 hover:bg-gray-700 text-white rounded-lg w-full"
             >
               Back

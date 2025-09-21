@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import Cookies from "js-cookie";
 import Layout from "./Layout";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -73,15 +74,23 @@ const PassengerDetails = () => {
     try {
       // Replace this with actual booking API
       //await new Promise((resolve) => setTimeout(resolve, 2000));
-      const total = fareBreakdown?.grossTotal;
-      navigate("/payment", {
-        state: {
-          bookingData: {
-            traindata: selectedTrain,
-            passengerdata: { total, adults, children, isPH },
+      const token = Cookies.get("token");
+      if (!token) {
+        alert("Session expired, please re-login!");
+        navigate("/"); // redirect to login
+        return;
+      } else {
+        //navigate("/wallet-recharge");
+        const total = fareBreakdown?.grossTotal;
+        navigate("/payment", {
+          state: {
+            bookingData: {
+              traindata: selectedTrain,
+              passengerdata: { total, adults, children, isPH },
+            },
           },
-        },
-      }); // redirect to homepage or booking summary
+        }); // redirect to homepage or booking summary
+      }
     } catch (err) {
       toast.error("Booking failed ❌");
       console.error(err);
@@ -223,7 +232,15 @@ const PassengerDetails = () => {
           {/* Buttons */}
           <div className="flex justify-between">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => {
+                if (!token) {
+                  alert("Session expired, please re-login!");
+                  navigate("/"); // redirect to login
+                  return;
+                } else {
+                  window.history.back();
+                }
+              }}
               className="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg"
               disabled={loading}
             >

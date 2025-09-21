@@ -2,24 +2,59 @@ import { useNavigate } from "react-router-dom";
 import { Slide } from "react-awesome-reveal";
 import Layout from "./Layout";
 import { Wallet, LogOut } from "lucide-react"; // icons
-
+import Cookies from "js-cookie";
 export default function Menu() {
   const navigate = useNavigate();
 
   const handleBookTickets = () => {
-    navigate("/station-details"); // goes to StationDetails
+    const token = Cookies.get("token");
+    if (!token) {
+      alert("Session expired, please re-login!");
+      navigate("/"); // redirect to login
+      return;
+    } else {
+      navigate("/station-details"); // goes to StationDetails
+    }
   };
 
   const handleHistory = () => {
-    navigate("/ticket-history");
+    const token = Cookies.get("token");
+    if (!token) {
+      alert("Session expired, please re-login!");
+      navigate("/"); // redirect to login
+      return;
+    } else {
+      navigate("/ticket-history");
+    }
   };
 
   const handleWallet = () => {
-    //navigate("/wallet-recharge");
+    const token = Cookies.get("token");
+    if (!token) {
+      alert("Session expired, please re-login!");
+      navigate("/"); // redirect to login
+      return;
+    } else {
+      //navigate("/wallet-recharge");
+    }
   };
 
-  const handleExit = () => {
-    //navigate("/"); // or close app if mobile
+  const handleExit = async () => {
+    const token = Cookies.get("token");
+    if (!token) {
+      alert("Session expired, please re-login!");
+      navigate("/"); // redirect to login
+      return;
+    } else {
+      const res = await axios.post(
+        SERVER + "/unreserved-ticket/logout",
+        {},
+        {
+          withCredentials: true,
+        }
+      );
+      navigate("/"); // redirect to login
+    }
   };
 
   return (
