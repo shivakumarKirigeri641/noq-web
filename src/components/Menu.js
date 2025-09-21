@@ -4,6 +4,7 @@ import { Slide } from "react-awesome-reveal";
 import Layout from "./Layout";
 import { Wallet, LogOut } from "lucide-react"; // icons
 import Cookies from "js-cookie";
+import axios from "axios";
 export default function Menu() {
   const navigate = useNavigate();
 
@@ -42,6 +43,7 @@ export default function Menu() {
 
   const handleExit = async () => {
     const token = Cookies.get("token");
+    console.log("test");
     if (!token) {
       alert("Session expired, please re-login!");
     } else {
